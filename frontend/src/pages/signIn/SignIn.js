@@ -1,12 +1,11 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import Input from '../../components/input/style';
 import BasicButton from "../../components/button/BasicButton.jsx";
 
 const SignIn = () => {
   
   // react-hook-form
-  const { register, handleSubmit, getValues, formState: { isSubmitted, isSubmitting, errors } } = useForm({ mode : "onchange" });
+  const { register, handleSubmit, getValues, formState: { errors } } = useForm({ mode : "onchange" });
 
   // 정규식 문법
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
@@ -19,7 +18,7 @@ const SignIn = () => {
 
       <label className="block w-full mb-8">
         <p className="text-base font-semibold text-gray-800 mb-3">이메일</p>
-        <Input size={"full"} shape={"small"} variant={"gray"} color={"black"} 
+        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none" 
           type="text" 
           id="email" name="email" 
           placeholder="아이디를 입력하세요." 
@@ -36,7 +35,7 @@ const SignIn = () => {
       {/* ------------------- 비밀번호 ------------------- */}
       <label className="block w-full mb-8">
         <p className="text-base font-semibold text-gray-800 mb-3">비밀번호</p>
-        <Input size={"full"} shape={"small"} variant={"gray"} color={"black"} 
+        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none"
           type="password" 
           id="password" name="password" 
           placeholder="비밀번호를 입력하세요." 

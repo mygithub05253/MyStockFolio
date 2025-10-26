@@ -1,8 +1,6 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import Input from '../../components/input/style';
 import BasicButton from "../../components/button/BasicButton.jsx";
-import S from "./style.js";
 
 const SignUp = () => {
   
@@ -14,15 +12,14 @@ const SignUp = () => {
   const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[!@#])[\da-zA-Z!@#]{8,}$/;
 
   return (
-    <S.Form onSubmit={handleSubmit((data) => { 
+    <form className="w-full h-full" onSubmit={handleSubmit((data) => { 
         console.log(data)
       })}>
       {/* 이메일 검증 로직 */}
-      <S.Label>
-        <S.Title>이메일</S.Title>
-        <Input size={"full"} shape={"small"} variant={"gray"} color={"black"} 
+      <label className="block w-full mb-8">
+        <p className="text-base font-semibold text-gray-800 mb-3">이메일</p>
+        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none" 
           type="text" 
-          className="BasicInput" 
           id="email" name="email" 
           placeholder="아이디를 입력하세요." 
           {...register("email", {
@@ -33,20 +30,19 @@ const SignUp = () => {
           })} />
 
         {errors?.email?.type === "required" && (
-          <S.ConfirmMessage>이메일을 입력해주세요.</S.ConfirmMessage>
+          <p className="text-xs text-purple-600 pt-2.5">이메일을 입력해주세요.</p>
         )}  
 
         {errors?.email?.type === "pattern" && (
-          <S.ConfirmMessage>이메일 양식에 맞게 입력해주세요.</S.ConfirmMessage>
+          <p className="text-xs text-purple-600 pt-2.5">이메일 양식에 맞게 입력해주세요.</p>
         )}  
-      </S.Label>
+      </label>
 
       {/* 비밀번호 검증 로직 */}
-      <S.Label>
-        <S.Title>비밀번호</S.Title>
-        <Input size={"full"} shape={"small"} variant={"gray"} color={"black"} 
+      <label className="block w-full mb-8">
+        <p className="text-base font-semibold text-gray-800 mb-3">비밀번호</p>
+        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none"
           type="password" 
-          className="BasicInput" 
           id="password" name="password" 
           placeholder="비밀번호를 입력하세요." 
           {...register("password", {
@@ -57,20 +53,19 @@ const SignUp = () => {
           })} />
 
         {errors?.password?.type === "required" && (
-          <S.ConfirmMessage>비밀번호를 입력해주세요.</S.ConfirmMessage>
+          <p className="text-xs text-purple-600 pt-2.5">비밀번호를 입력해주세요.</p>
         )}  
 
         {errors?.password?.type === "pattern" && (
-          <S.ConfirmMessage>소문자, 숫자, 특수문자 각 하나씩 포함한 8자리 이상이어야 합니다. "!@#만 사용가능"</S.ConfirmMessage>
+          <p className="text-xs text-purple-600 pt-2.5">소문자, 숫자, 특수문자 각 하나씩 포함한 8자리 이상이어야 합니다. "!@#만 사용가능"</p>
         )}  
-      </S.Label>
+      </label>
 
       {/* 비밀번호 확인 로직 */}
-      <S.Label>
-        <S.Title>비밀번호 확인</S.Title>
-        <Input size={"full"} shape={"small"} variant={"gray"} color={"black"} 
+      <label className="block w-full mb-8">
+        <p className="text-base font-semibold text-gray-800 mb-3">비밀번호 확인</p>
+        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none"
           type="password" 
-          className="BasicInput" 
           placeholder="비밀번호를 확인해주세요." 
           {...register("passwordConfirm", {
             required : true,
@@ -85,24 +80,23 @@ const SignUp = () => {
           })} />
 
         {errors?.passwordConfirm && (
-          <S.ConfirmMessage>비밀번호를 확인해주세요.</S.ConfirmMessage>
+          <p className="text-xs text-purple-600 pt-2.5">비밀번호를 확인해주세요.</p>
         )}  
 
-      </S.Label>
+      </label>
 
       {/* 블록체인 지갑 주소 입력란 */}
-      <S.Label>
-        <S.Title>블록체인 지갑 주소 (선택)</S.Title>
-        <Input size={"full"} shape={"small"} variant={"gray"} color={"black"} 
+      <label className="block w-full mb-8">
+        <p className="text-base font-semibold text-gray-800 mb-3">블록체인 지갑 주소 (선택)</p>
+        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none" 
           type="text" 
-          className="BasicInput" 
           placeholder="MetaMask 지갑 주소를 입력하세요. (예: 0x...)"
           {...register("walletAddress")}
           />
-      </S.Label>
+      </label>
 
       <BasicButton size={"full"} shape={"small"} variant={"black"} color={"white"}>회원가입</BasicButton>
-    </S.Form>
+    </form>
   );
 };
 

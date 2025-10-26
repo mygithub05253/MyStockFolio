@@ -1,43 +1,39 @@
 import React from 'react';
 import { faBell, faHouse, faSearch, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import S from './style';
-import { useDispatch, useSelector } from 'react-redux';
-import { setPreviousUrl } from '../../modules/user';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 
 const AdminLayout = () => {
 
   return (
-    <S.Background>
-      <S.Wrapper>
-        <S.Header>
-          <Link to={"/"}>Dongwon's Todo</Link>
-        </S.Header>
-        <S.Main>
+    <div className="flex items-center justify-center w-full min-h-screen bg-gray-100">
+      <div className="flex flex-col w-full max-w-md h-[800px] md:h-screen bg-white shadow-lg p-7">
+        <header className="flex items-center w-full h-24">
+          <Link to={"/"} className="text-2xl font-semibold">Dongwon's Todo</Link>
+        </header>
+        <main className="flex-1 overflow-y-auto">
           <Outlet />
-        </S.Main>
-        <S.Nav>
-          {/* NavLink : 현재 URL에 있는 링크를 관찰하는 태그 */}
-          <NavLink to={"/todo"}>
-            <FontAwesomeIcon icon={faHouse} className="icon" />
-            <p>피드</p>
+        </main>
+        <nav className="flex items-center justify-between w-full h-24">
+          <NavLink to={"/todo"} className="text-center">
+            <FontAwesomeIcon icon={faHouse} className="text-2xl p-1 text-gray-400" />
+            <p className="text-gray-400">피드</p>
           </NavLink>
-          <NavLink to={"/search"}>
-            <FontAwesomeIcon icon={faSearch} className="icon" />
-            <p>검색</p>
+          <NavLink to={"/search"} className="text-center">
+            <FontAwesomeIcon icon={faSearch} className="text-2xl p-1 text-gray-400" />
+            <p className="text-gray-400">검색</p>
           </NavLink>
-          <NavLink to={"/notice"}>
-            <FontAwesomeIcon icon={faBell} className="icon" />
-            <p>알림</p>
+          <NavLink to={"/notice"} className="text-center">
+            <FontAwesomeIcon icon={faBell} className="text-2xl p-1 text-gray-400" />
+            <p className="text-gray-400">알림</p>
           </NavLink>
-          <NavLink to={"/my"}>
-            <FontAwesomeIcon icon={faUser} className="icon" />
-            <p>My</p>
+          <NavLink to={"/my"} className="text-center">
+            <FontAwesomeIcon icon={faUser} className="text-2xl p-1 text-gray-400" />
+            <p className="text-gray-400">My</p>
           </NavLink>
-        </S.Nav>
-      </S.Wrapper>
-    </S.Background>
+        </nav>
+      </div>
+    </div>
   );
 };
 

@@ -8,7 +8,6 @@ const MyPage = () => {
   const login = searchParams.get("login");
 
   const previousUrl = useSelector((state) => state.user.previousUrl);
-  const isLogin = useSelector((state) => state.user.isLogin);
 
   if(login) {
     return (
