@@ -1,6 +1,5 @@
 import React from 'react';
 import useInput from '../../hooks/useInput';
-import S from './style';
 import BasicButton from '../../components/button/BasicButton';
 
 const AssetInsert = ({isTodoUpdate, setIsTodoUpdate}) => {
@@ -36,7 +35,7 @@ const AssetInsert = ({isTodoUpdate, setIsTodoUpdate}) => {
 
   return (
     <form onSubmit={onSubmitAsset} style={{ marginBottom: '50px' }}>
-      <S.Input 
+      <input className="w-full h-10 rounded-lg bg-gray-100 px-4 border-none placeholder-gray-400" 
         type='text' 
         placeholder='종목 티커 (예: AAPL, BTC-USD)' 
         value={ticker} 
@@ -44,7 +43,7 @@ const AssetInsert = ({isTodoUpdate, setIsTodoUpdate}) => {
         required 
         style={{ marginBottom: '10px' }}
       />
-      <S.Input 
+      <input className="w-full h-10 rounded-lg bg-gray-100 px-4 border-none placeholder-gray-400" 
         type='number' 
         placeholder='보유 수량' 
         value={quantity} 
@@ -53,7 +52,7 @@ const AssetInsert = ({isTodoUpdate, setIsTodoUpdate}) => {
         step="any"
         style={{ marginBottom: '10px' }}
       />
-      <S.Input 
+      <input className="w-full h-10 rounded-lg bg-gray-100 px-4 border-none placeholder-gray-400" 
         type='number' 
         placeholder='평균 매수 단가 ($)' 
         value={avgPrice} 

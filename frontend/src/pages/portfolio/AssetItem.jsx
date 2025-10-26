@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import S from './style';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faTrash, faCheck, faX } from '@fortawesome/free-solid-svg-icons';
 import useInput from '../../hooks/useInput';
@@ -9,7 +8,7 @@ const AssetItem = ({asset, isTodoUpdate, setIsTodoUpdate}) => {
 
   // 수정 할 때
   const [isEdit, setIsEdit] = useState(false);
-  const [value, onChangeValue, setValue] = useInput(ticker);
+  const [value, onChangeValue] = useInput(ticker);
 
   const handleIsEdit = () => {
     setIsEdit(!isEdit)
@@ -17,31 +16,30 @@ const AssetItem = ({asset, isTodoUpdate, setIsTodoUpdate}) => {
 
   // CRUD 수정
   // 체크 상태관리
-  const [isChecked, setIsChecked] = useState(asset.isChecked);
+  // const [isChecked, setIsChecked] = useState(asset.isChecked);
 
-  const handleIsChecked = async () => {
-    await fetch(`http://localhost:4000/todo/${id}`, {
-      method : 'PUT',
-      headers : {
-        'Content-Type' : 'application/json'
-      },
-      body : JSON.stringify({
-        ...asset,
-        isChecked : !isChecked
-      })
-    }).then((response) => {
-      console.log('리스폰트', response)
-      if(!response.ok) return console.error(`Error ${response}`)
-      setIsTodoUpdate(!isTodoUpdate)
-      setIsChecked(!isChecked)
-    })
-  }
+  // const handleIsChecked = async () => {
+  //   await fetch(`/api/portfolio/assets/${id}`, {
+  //     method : 'PUT',
+  //     headers : {
+  //       'Content-Type' : 'application/json'
+  //     },
+  //     body : JSON.stringify({
+  //       ...asset,
+  //       isChecked : !isChecked
+  //     })
+  //   }).then((response) => {
+  //     console.log('리스폰트', response)
+  //     if(!response.ok) return console.error(`Error ${response}`)
+  //     setIsTodoUpdate(!isTodoUpdate)
+  //     setIsChecked(!isChecked)
+  //   })
+  // }
   
   // 삭제
-  // Todo 리스트 삭제
   const handleRemoveTodo = async () => {
     if(window.confirm("정말 삭제하시겠습니까?")){
-      await fetch(`http://localhost:4000/todo/${id}`, {
+      await fetch(`/api/portfolio/assets/${id}`, {
         method : 'DELETE'
       }).then((response) => {
         console.log("리스폰스 받기", response)
@@ -55,14 +53,14 @@ const AssetItem = ({asset, isTodoUpdate, setIsTodoUpdate}) => {
   // 수정
   // 타이틀 수정
   const handleUpdateTodo = async () => {
-    await fetch(`http://localhost:4000/todo/${id}`, {
+    await fetch(`/api/portfolio/assets/${id}`, {
       method : 'PUT',
       headers : {
         'Content-Type' : 'application/json'
       },
       body : JSON.stringify({
         ...asset,
-        title : value
+        ticker : value
       })
     }).then((response) => {
       console.log("리스폰스", response)
@@ -73,36 +71,36 @@ const AssetItem = ({asset, isTodoUpdate, setIsTodoUpdate}) => {
   }
 
   return (
-    <S.Li>
-      <S.Wrapper>
+    <li className="flex justify-between items-center h-10">
+      <div className="flex items-center">
         {isEdit ? (
           <input className='update-input' type='text' value={value} onChange={onChangeValue}/>
         ) : (
-          <S.Title>
+          <p className="text-base font-normal">
             {name} ({ticker}) - {quantity}주 @ ${avgBuyPrice}
-          </S.Title>
+          </p>
         )}
-      </S.Wrapper>
-      <S.Wrapper>
+      </div>
+      <div className="flex items-center">
         {isEdit ? (
           <>
-            <S.Button onClick={handleUpdateTodo}>
+            <button className="bg-transparent border-none cursor-pointer text-base" onClick={handleUpdateTodo}>
               <FontAwesomeIcon className='check' icon={faCheck}></FontAwesomeIcon>
-            </S.Button>
-            <S.Button>
-              <FontAwesomeIcon className='exit' icon={faX} onClick={handleIsEdit}></FontAwesomeIcon>
-            </S.Button>
+            </button>
+            <button className="bg-transparent border-none cursor-pointer text-base" onClick={handleIsEdit}>
+              <FontAwesomeIcon className='exit' icon={faX}></FontAwesomeIcon>
+            </button>
           </>
         ) : (
-          <S.Button>
+          <button className="bg-transparent border-none cursor-pointer text-base">
             <FontAwesomeIcon className='pen' icon={faPen} onClick={handleIsEdit}></FontAwesomeIcon>
-          </S.Button>
+          </button>
         )}
-        <S.Button onClick={handleRemoveTodo}>
+        <button className="bg-transparent border-none cursor-pointer text-base ml-2" onClick={handleRemoveTodo}>
           <FontAwesomeIcon className='trash' icon={faTrash}></FontAwesomeIcon>
-        </S.Button>
-      </S.Wrapper>
-    </S.Li>
+        </button>
+      </div>
+    </li>
   );
 };
 

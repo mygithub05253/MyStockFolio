@@ -8,7 +8,7 @@ const PortfolioContainer = () => {
   const [isTodoUpdate, setIsTodoUpdate] = useState(false);
 
   const getAssets = async () => {
-    const response = await fetch("http://localhost:4000/assets");
+    const response = await fetch("/api/portfolio/assets");
     const datas = await response.json();
     setAssets(datas);
   }
@@ -22,7 +22,7 @@ const PortfolioContainer = () => {
   return (
     <div>
       <AssetInsert isTodoUpdate={isTodoUpdate} setIsTodoUpdate={setIsTodoUpdate} assets={assets} />
-      <p className='SubTitle'>남은 할일: 🙂<span>{assets && assets.length}</span></p>
+      <p className="text-base font-semibold mb-6">내 자산 목록: 💎<span className="text-indigo-500">{assets && assets.length}</span></p>
       <ul>
         { assets && assets.map((asset, i) => (
           <AssetItem key={i} asset={asset} isTodoUpdate={isTodoUpdate} setIsTodoUpdate={setIsTodoUpdate} />
