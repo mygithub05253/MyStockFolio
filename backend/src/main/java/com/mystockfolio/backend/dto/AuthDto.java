@@ -1,5 +1,8 @@
 package com.mystockfolio.backend.dto;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,12 +16,21 @@ public class AuthDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SignUpRequest {
-        // SignUp.js 에서 받는 필드
+        @NotBlank(message = "이메일은 필수 입력값입니다.")
+        @Email(message = "이메일 형식이 올바르지 않습니다.")
         private String email;
+
+        @NotBlank(message = "비밀번호는 필수 입력값입니다.")
+        @Size(min = 8, message = "비밀번호는 8자 이상이어야 합니다.") // 예시 제약 조건
         private String password;
-        private String passwordConfirm; // 비밀번호 확인 (백엔드에서도 검증)
-        private String nickname; // 닉네임 추가 필요 (프론트 SignUp.js 수정 필요)
-        private String walletAddress;
+
+        @NotBlank(message = "비밀번호 확인은 필수 입력값입니다.")
+        private String passwordConfirm;
+
+        @NotBlank(message = "닉네임은 필수 입력값입니다.")
+        private String nickname;
+
+        private String walletAddress; // 선택 사항일 수 있음
     }
 
     @Getter

@@ -1,11 +1,11 @@
-package com.mystockfolio.backend.domain.entity; // 패키지 경로 변경
+package com.mystockfolio.backend.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter; // 연관관계 편의 메서드 위해 임시 추가 (혹은 별도 메서드)
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -14,12 +14,12 @@ public class Asset {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "asset_id")
-    private Long id;
+    // @Column(name = "asset_id") // <-- 제거: DB PK 컬럼명은 'id'
+    private Long id; // <-- 필드 이름 'id' 확인 (이미 맞게 되어 있음)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "portfolio_id", nullable = false)
-    @Setter // 연관관계 편의 메서드를 위해 임시 추가 (양방향 설정 시)
+    @JoinColumn(name = "portfolio_id", nullable = false) // FK 컬럼명은 'portfolio_id'가 맞음
+    @Setter // 연관관계 편의 메서드를 위해 유지
     private Portfolio portfolio;
 
     @Enumerated(EnumType.STRING)
@@ -36,11 +36,11 @@ public class Asset {
     private Double quantity;
 
     @Column(nullable = false)
-    private Double avgBuyPrice; // avg_buy_price 컬럼에 매핑됨
+    private Double avgBuyPrice;
 
     @Builder
     public Asset(Portfolio portfolio, AssetType assetType, String ticker, String name, Double quantity, Double avgBuyPrice) {
-        this.portfolio = portfolio; // portfolio 객체 직접 설정
+        this.portfolio = portfolio;
         this.assetType = assetType;
         this.ticker = ticker;
         this.name = name;
@@ -48,23 +48,15 @@ public class Asset {
         this.avgBuyPrice = avgBuyPrice;
     }
 
-    // 자산 정보 업데이트 메서드 (예시)
+    // 자산 정보 업데이트 메서드
     public void updateAssetDetails(String name, Double quantity, Double avgBuyPrice) {
-        // name 업데이트 로직은 아래 setName 으로 분리하거나, 여기서 조건부 업데이트 유지 가능
-        // if (name != null) this.name = name;
+        if (name != null) this.name = name;
         if (quantity != null && quantity >= 0) this.quantity = quantity;
         if (avgBuyPrice != null && avgBuyPrice >= 0) this.avgBuyPrice = avgBuyPrice;
     }
 
-    // AssetService에서 이름을 설정하기 위한 setter 메서드 추가
+    // AssetService에서 이름을 설정하기 위한 setter 메서드
     public void setName(String name) {
         this.name = name;
     }
-
-    // 필요하다면 ticker setter도 추가할 수 있습니다.
-    // public void setTicker(String ticker) {
-    //     if (ticker != null && !ticker.isBlank()) {
-    //         this.ticker = ticker;
-    //     }
-    // }
 }
