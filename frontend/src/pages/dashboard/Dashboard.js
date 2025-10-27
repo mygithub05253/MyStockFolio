@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { Line, Pie } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title } from 'chart.js';
 
-// TODO: 나중에 Chart 라이브러리 임포트
-// import { Line, Pie } from 'react-chartjs-2';
-// import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement } from 'chart.js';
-
-// ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Title);
 
 const Dashboard = () => {
   // TODO: 나중에 백엔드(/api/portfolio/stats)에서 실제 데이터 가져오기
@@ -12,12 +10,12 @@ const Dashboard = () => {
     totalValue: 12345.67,
     totalProfitLoss: 1500.23,
     totalProfitLossRate: 13.8,
-    allocation: [ // 임시 데이터 (자산 배분)
+    allocation: [
       { name: '주식', value: 60 },
       { name: '코인', value: 30 },
       { name: '현금', value: 10 },
     ],
-    history: [ // 임시 데이터 (자산 추이)
+    history: [
       { date: '2025-10-01', value: 10000 },
       { date: '2025-10-08', value: 10500 },
       { date: '2025-10-15', value: 11000 },
@@ -48,10 +46,9 @@ const Dashboard = () => {
       label: '자산 배분 (%)',
       data: stats.allocation.map(item => item.value),
       backgroundColor: [
-        'rgba(54, 162, 235, 0.8)', // 파랑
-        'rgba(255, 206, 86, 0.8)', // 노랑
-        'rgba(75, 192, 192, 0.8)', // 초록
-        // 필요시 색상 추가
+        'rgba(54, 162, 235, 0.8)',
+        'rgba(255, 206, 86, 0.8)',
+        'rgba(75, 192, 192, 0.8)',
       ],
       borderColor: [
         'rgba(255, 255, 255, 1)',
@@ -61,7 +58,7 @@ const Dashboard = () => {
   };
 
   const lineChartData = {
-    labels: stats.history.map(item => item.date.substring(5)), // 날짜 (MM-DD 형식)
+    labels: stats.history.map(item => item.date.substring(5)),
     datasets: [{
       label: '총 자산 추이 ($)',
       data: stats.history.map(item => item.value),
@@ -70,7 +67,35 @@ const Dashboard = () => {
       tension: 0.1
     }]
   };
-  // --- 임시 차트 데이터 및 옵션 끝 ---
+
+  const pieChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: false,
+      },
+    },
+  };
+
+  const lineChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: false,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: false
+      }
+    }
+  };
 
 
   return (
@@ -91,10 +116,8 @@ const Dashboard = () => {
       {/* 2. 자산 배분 (Pie Chart 영역) */}
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-4 text-gray-700">자산 배분</h2>
-        <div className="w-full max-w-xs mx-auto"> {/* 차트 크기 조절 */}
-          {/* TODO: 여기에 Pie Chart 컴포넌트 삽입 */}
-          {/* <Pie data={pieChartData} /> */}
-          <div className="h-64 bg-gray-200 flex items-center justify-center rounded">Pie Chart Placeholder</div>
+        <div className="w-full max-w-xs mx-auto">
+          <Pie data={pieChartData} options={pieChartOptions} />
         </div>
       </div>
 
@@ -102,9 +125,7 @@ const Dashboard = () => {
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-xl font-semibold mb-4 text-gray-700">자산 추이</h2>
         <div className="w-full">
-          {/* TODO: 여기에 Line Chart 컴포넌트 삽입 */}
-          {/* <Line data={lineChartData} /> */}
-          <div className="h-64 bg-gray-200 flex items-center justify-center rounded">Line Chart Placeholder</div>
+          <Line data={lineChartData} options={lineChartOptions} />
         </div>
       </div>
     </div>

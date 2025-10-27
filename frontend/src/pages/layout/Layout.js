@@ -1,5 +1,5 @@
 import React from 'react';
-import { faBell, faHouse, faSearch, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faHouse, faListCheck, faSearch, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -37,11 +37,11 @@ const Layout = () => {
               <FontAwesomeIcon icon={faHouse} className="text-2xl p-1 text-gray-400" />
               <p className="text-gray-400">대시보드</p>
             </NavLink>
-            <NavLink to={"/market"} className="text-center"> {/* 경로 변경: 검색 -> 마켓 */}
-              <FontAwesomeIcon icon={faSearch} className="text-2xl p-1 text-gray-400" />
-              <p className="text-gray-400">마켓</p> {/* 이름 변경 */}
+            <NavLink to={"/portfolio"} className="text-center">
+              <FontAwesomeIcon icon={faListCheck} className="text-2xl p-1 text-gray-400" />
+              <p className="text-gray-400">포트폴리오</p>
             </NavLink>
-            <NavLink to={"/rewards"} className="text-center"> {/* 경로 변경: 알림 -> 리워드 */}
+            <NavLink to={"/rewards"} className="text-center">
               <FontAwesomeIcon icon={faBell} className="text-2xl p-1 text-gray-400" />
               <p className="text-gray-400">리워드</p> {/* 이름 변경 */}
             </NavLink>
