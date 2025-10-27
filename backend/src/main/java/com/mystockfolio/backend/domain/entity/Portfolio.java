@@ -15,8 +15,8 @@ public class Portfolio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "portfolio_id")
-    private Long id;
+    @Column(name = "portfolio_id") // DB 컬럼 이름은 그대로 유지
+    private Long portfolioId; // <-- 필드 이름 변경 (id -> portfolioId)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -50,4 +50,10 @@ public class Portfolio {
             this.name = name;
         }
     }
+
+    // portfolioId getter 추가 (Lombok @Getter가 자동으로 생성하지만 명시적으로 보여주기 위해)
+    // Lombok의 @Getter가 있으므로 실제 코드에 추가할 필요는 없습니다.
+    // public Long getPortfolioId() {
+    //     return portfolioId;
+    // }
 }

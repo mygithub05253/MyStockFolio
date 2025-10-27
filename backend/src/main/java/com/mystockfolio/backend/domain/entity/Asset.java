@@ -50,8 +50,21 @@ public class Asset {
 
     // 자산 정보 업데이트 메서드 (예시)
     public void updateAssetDetails(String name, Double quantity, Double avgBuyPrice) {
-        if (name != null) this.name = name;
+        // name 업데이트 로직은 아래 setName 으로 분리하거나, 여기서 조건부 업데이트 유지 가능
+        // if (name != null) this.name = name;
         if (quantity != null && quantity >= 0) this.quantity = quantity;
         if (avgBuyPrice != null && avgBuyPrice >= 0) this.avgBuyPrice = avgBuyPrice;
     }
+
+    // AssetService에서 이름을 설정하기 위한 setter 메서드 추가
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    // 필요하다면 ticker setter도 추가할 수 있습니다.
+    // public void setTicker(String ticker) {
+    //     if (ticker != null && !ticker.isBlank()) {
+    //         this.ticker = ticker;
+    //     }
+    // }
 }

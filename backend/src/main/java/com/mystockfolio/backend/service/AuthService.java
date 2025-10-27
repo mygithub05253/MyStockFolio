@@ -2,9 +2,10 @@ package com.mystockfolio.backend.service;
 
 import com.mystockfolio.backend.domain.entity.User;
 import com.mystockfolio.backend.dto.AuthDto;
-import com.mystockfolio.backend.exception.DuplicateResourceException; // 예외 클래스 (아래 생성)
-import com.mystockfolio.backend.exception.InvalidCredentialsException; // 예외 클래스 (아래 생성)
+import com.mystockfolio.backend.exception.DuplicateResourceException;
+import com.mystockfolio.backend.exception.InvalidCredentialsException;
 import com.mystockfolio.backend.repository.UserRepository;
+import com.mystockfolio.backend.util.JwtTokenProvider; // JwtTokenProvider import 추가
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,9 +17,9 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    // TODO: JWT 토큰 생성을 위한 JwtTokenProvider 주입 필요
+    private final JwtTokenProvider jwtTokenProvider; // JwtTokenProvider 주입
 
-    // 회원가입
+    // 회원가입 (변경 없음)
     @Transactional
     public User signUp(AuthDto.SignUpRequest requestDto) {
         // 이메일 중복 확인
@@ -47,7 +48,7 @@ public class AuthService {
         return userRepository.save(newUser);
     }
 
-    // 로그인 (JWT 발급 전 기본 인증)
+    // 로그인 (JWT 발급 로직 수정)
     @Transactional(readOnly = true)
     public AuthDto.AuthResponse signIn(AuthDto.SignInRequest requestDto) {
         // 이메일로 사용자 조회
@@ -59,15 +60,15 @@ public class AuthService {
             throw new InvalidCredentialsException("이메일 또는 비밀번호가 잘못되었습니다.");
         }
 
-        // TODO: JWT 토큰 생성 로직 추가
-        String tempAccessToken = "dummy-jwt-token-for-" + user.getId(); // 임시 토큰
+        // JWT 토큰 생성
+        String accessToken = jwtTokenProvider.generateToken(user.getId());
 
         // 로그인 성공 응답 생성
         return AuthDto.AuthResponse.builder()
                 .userId(user.getId())
                 .email(user.getEmail())
                 .nickname(user.getNickname())
-                .accessToken(tempAccessToken) // 임시 토큰 전달
+                .accessToken(accessToken) // 생성된 JWT 토큰 전달
                 .build();
     }
 }
