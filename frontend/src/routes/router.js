@@ -14,36 +14,13 @@ const router = createBrowserRouter([
     path : "/",
     element : <Layout />,
     children : [
-      {
-        path : "/",
-        element : <Main />
-      },
-      {
-        path: "/portfolio",
-        element : <PortfolioContainer />
-      },
-      {
-        path : "/signIn",
-        element : <SignIn />
-      },
-      {
-        path : "/signUp",
-        element : <SignUp />
-      },
-      {
-        path : "/dashboard",
-        element: <Dashboard />
-      },
-    ]
-  },
-  {
-    path : "/my",
-    element : <AdminLayout />,
-    children : [
-      {
-        path : "/my",
-        element : <MyPage />
-      }
+      { path : "/", element : <Main /> },
+      { path: "/portfolio", element : <PortfolioContainer /> },
+      { path : "/signIn", element : <SignIn /> },
+      { path : "/signUp", element : <SignUp /> },
+      { path : "/dashboard", element: <Dashboard /> },
+      { path : "/my", element : <MyPage /> },
+      // TODO: /rewards 경로 추가 필요
     ]
   },
   {
