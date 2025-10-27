@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/portfolio/assets") // 프론트엔드 요청 경로에 맞춤
+@RequestMapping("/api/portfolios/{portfolioId}/assets")// 프론트엔드 요청 경로에 맞춤
 @RequiredArgsConstructor
 public class AssetController {
 
@@ -18,7 +18,7 @@ public class AssetController {
 
     // 특정 포트폴리오의 모든 자산 조회 (GET /api/portfolio/assets?portfolioId=1)
     @GetMapping
-    public ResponseEntity<List<AssetDto.AssetResponse>> getAssets(@RequestParam Long portfolioId) {
+    public ResponseEntity<List<AssetDto.AssetResponse>> getAssets(@PathVariable Long portfolioId) {
         // TODO: portfolioId가 현재 로그인한 사용자의 것인지 Service에서 확인하도록 수정
         List<AssetDto.AssetResponse> assets = assetService.getAssetsByPortfolioId(portfolioId);
         return ResponseEntity.ok(assets);
@@ -26,7 +26,7 @@ public class AssetController {
 
     // 새 자산 추가 (POST /api/portfolio/assets?portfolioId=1)
     @PostMapping
-    public ResponseEntity<AssetDto.AssetResponse> createAsset(@RequestParam Long portfolioId,
+    public ResponseEntity<AssetDto.AssetResponse> createAsset(@PathVariable Long portfolioId,
                                                               @RequestBody AssetDto.AssetCreateRequest requestDto) {
         // TODO: portfolioId가 현재 로그인한 사용자의 것인지 Service에서 확인하도록 수정
         AssetDto.AssetResponse createdAsset = assetService.createAsset(portfolioId, requestDto);
