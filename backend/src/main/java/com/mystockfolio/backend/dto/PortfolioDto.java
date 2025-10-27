@@ -43,7 +43,7 @@ public class PortfolioDto {
     @AllArgsConstructor
     @Builder
     public static class PortfolioResponse {
-        private Long id;
+        private Long id; // DTO 필드 이름은 id로 유지해도 됩니다 (JSON 응답 필드명).
         private String name;
         // 필요시 포트폴리오에 속한 자산 목록도 포함 가능
         private List<AssetDto.AssetResponse> assets;
@@ -55,7 +55,7 @@ public class PortfolioDto {
                     .collect(Collectors.toList());
 
             return PortfolioResponse.builder()
-                    .id(portfolio.getId())
+                    .id(portfolio.getPortfolioId()) // <-- 여기를 수정! getId() -> getPortfolioId()
                     .name(portfolio.getName())
                     .assets(assetDtos) // 자산 목록 포함
                     .build();
@@ -68,12 +68,12 @@ public class PortfolioDto {
     @AllArgsConstructor
     @Builder
     public static class PortfolioSimpleResponse {
-        private Long id;
+        private Long id; // DTO 필드 이름은 id로 유지
         private String name;
 
         public static PortfolioSimpleResponse fromEntity(Portfolio portfolio) {
             return PortfolioSimpleResponse.builder()
-                    .id(portfolio.getId())
+                    .id(portfolio.getPortfolioId()) // <-- 여기도 수정! getId() -> getPortfolioId()
                     .name(portfolio.getName())
                     .build();
         }
