@@ -14,8 +14,8 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long id;
+    // @Column(name = "user_id") // 실제 DB 컬럼 이름 'id'와 불일치하므로 이 줄 제거
+    private Long id; // 필드 이름 'id'는 NamingStrategy에 의해 'id' 컬럼에 매핑됨
 
     @Column(nullable = false, unique = true, length = 100)
     private String email;
@@ -27,9 +27,9 @@ public class User {
     private String nickname;
 
     @Column(length = 42)
-    private String walletAddress;
+    private String walletAddress; // NamingStrategy에 의해 'wallet_address' 컬럼에 매핑됨
 
-    @Builder // Builder 어노테이션 추가
+    @Builder
     public User(String email, String password, String nickname, String walletAddress) {
         this.email = email;
         this.password = password;
