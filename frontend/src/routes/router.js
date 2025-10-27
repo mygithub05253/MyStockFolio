@@ -8,6 +8,8 @@ import SignUp from "../pages/signUp/SignUp";
 import MyPage from "../pages/myPage/MyPage";
 import AdminLayout from "../pages/layout/AdminLayout";
 import Dashboard from "../pages/dashboard/Dashboard";
+import Market from "../pages/market/Market";
+import Rewards from "../pages/rewards/Rewards";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +21,8 @@ const router = createBrowserRouter([
       { path : "/signIn", element : <SignIn /> },
       { path : "/signUp", element : <SignUp /> },
       { path : "/dashboard", element: <Dashboard /> },
+      { path : "/market", element: <Market /> },
+      { path : "/rewards", element: <Rewards /> },
       { path : "/my", element : <MyPage /> },
       // TODO: /rewards 경로 추가 필요
     ]
