@@ -1,4 +1,4 @@
-package com.mystockfolio.backend.domain.entity; // 패키지 경로 변경
+package com.mystockfolio.backend.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -15,8 +15,8 @@ public class Portfolio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "portfolio_id") // DB 컬럼 이름은 그대로 유지
-    private Long portfolioId; // <-- 필드 이름 변경 (id -> portfolioId)
+    // @Column(name = "portfolio_id") // <-- 제거: DB PK 컬럼명은 'id'
+    private Long id; // <-- 필드 이름 'id'로 수정
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -25,9 +25,6 @@ public class Portfolio {
     @Column(nullable = false, length = 50)
     private String name;
 
-    // mappedBy는 Asset 엔티티의 portfolio 필드를 가리킴
-    // cascade = CascadeType.ALL: 포트폴리오 저장/삭제 시 Asset도 함께 처리
-    // orphanRemoval = true: 컬렉션에서 Asset 제거 시 DB에서도 삭제
     @OneToMany(mappedBy = "portfolio", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Asset> assets = new ArrayList<>();
 
@@ -50,10 +47,4 @@ public class Portfolio {
             this.name = name;
         }
     }
-
-    // portfolioId getter 추가 (Lombok @Getter가 자동으로 생성하지만 명시적으로 보여주기 위해)
-    // Lombok의 @Getter가 있으므로 실제 코드에 추가할 필요는 없습니다.
-    // public Long getPortfolioId() {
-    //     return portfolioId;
-    // }
 }
