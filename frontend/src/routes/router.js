@@ -7,6 +7,7 @@ import SignIn from "../pages/signIn/SignIn";
 import SignUp from "../pages/signUp/SignUp";
 import MyPage from "../pages/myPage/MyPage";
 import AdminLayout from "../pages/layout/AdminLayout";
+import Dashboard from "../pages/dashboard/Dashboard";
 
 const router = createBrowserRouter([
   {
@@ -28,7 +29,11 @@ const router = createBrowserRouter([
       {
         path : "/signUp",
         element : <SignUp />
-      }
+      },
+      {
+        path : "/dashboard",
+        element: <Dashboard />
+      },
     ]
   },
   {
