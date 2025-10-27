@@ -41,9 +41,13 @@ const Layout = () => {
               <FontAwesomeIcon icon={faListCheck} className="text-2xl p-1 text-gray-400" />
               <p className="text-gray-400">포트폴리오</p>
             </NavLink>
+            <NavLink to={"/market"} className="text-center">
+              <FontAwesomeIcon icon={faHouse} className="text-2xl p-1 text-gray-400" />
+              <p className="text-gray-400">시장</p>
+            </NavLink>
             <NavLink to={"/rewards"} className="text-center">
               <FontAwesomeIcon icon={faBell} className="text-2xl p-1 text-gray-400" />
-              <p className="text-gray-400">리워드</p> {/* 이름 변경 */}
+              <p className="text-gray-400">리워드</p>
             </NavLink>
             <NavLink to={"/my"} className="text-center">
               <FontAwesomeIcon icon={faUser} className="text-2xl p-1 text-gray-400" />
