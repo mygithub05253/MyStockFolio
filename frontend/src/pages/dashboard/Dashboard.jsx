@@ -2,6 +2,30 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axiosInstance from '../../api/axiosInstance';
 import { setDashboardStats, setLoading, setError } from '../../modules/dashboard'; 
+import { Pie, Line } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    ArcElement,
+    Tooltip,
+    Legend,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title
+} from 'chart.js';
+
+// Chart.js 컴포넌트 등록
+ChartJS.register(
+    ArcElement,
+    Tooltip,
+    Legend,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title
+);
 
 // 숫자 포맷팅 유틸리티 (로컬 함수로 구현)
 const formatCurrency = (amount) => {
@@ -78,6 +102,125 @@ const Dashboard = () => {
     if (error) {
         return <div className="container mx-auto p-4 max-w-md text-center mt-10 text-red-600">오류 발생: {error}</div>;
     }
+
+    // Pie Chart 데이터 준비
+    const pieChartData = {
+        labels: displayData.assetAllocations.map(item => {
+            const typeLabels = {
+                'STOCK': '주식',
+                'COIN': '코인',
+                'STABLECOIN': '스테이블코인',
+                'DEFI': 'DeFi',
+                'NFT': 'NFT',
+                'OTHER': '기타'
+            };
+            return typeLabels[item.assetType] || item.assetType;
+        }),
+        datasets: [{
+            label: '자산 배분',
+            data: displayData.assetAllocations.map(item => item.value),
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.8)',
+                'rgba(54, 162, 235, 0.8)',
+                'rgba(255, 206, 86, 0.8)',
+                'rgba(75, 192, 192, 0.8)',
+                'rgba(153, 102, 255, 0.8)',
+                'rgba(255, 159, 64, 0.8)',
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)',
+            ],
+            borderWidth: 1,
+        }]
+    };
+
+    const pieChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const percentage = displayData.assetAllocations[context.dataIndex]?.percentage || 0;
+                        return `${label}: ${formatCurrency(value)} (${percentage.toFixed(1)}%)`;
+                    }
+                }
+            }
+        }
+    };
+
+    // Line Chart 데이터 준비 (임시 데이터 - 추후 백엔드에서 시계열 데이터 받아올 예정)
+    const generateMockTimeSeriesData = () => {
+        const days = 30;
+        const baseValue = displayData.totalInitialInvestment || 1000000;
+        const currentValue = displayData.totalMarketValue || baseValue;
+        const dates = [];
+        const values = [];
+        
+        for (let i = days; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            dates.push(date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
+            
+            // 선형 증가/감소를 시뮬레이션
+            const progress = (days - i) / days;
+            const value = baseValue + (currentValue - baseValue) * progress;
+            values.push(value);
+        }
+        
+        return { dates, values };
+    };
+
+    const timeSeriesData = generateMockTimeSeriesData();
+
+    const lineChartData = {
+        labels: timeSeriesData.dates,
+        datasets: [{
+            label: '총 자산 가치',
+            data: timeSeriesData.values,
+            borderColor: 'rgb(99, 102, 241)',
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            tension: 0.3,
+            fill: true,
+        }]
+    };
+
+    const lineChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return formatCurrency(context.parsed.y);
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: false,
+                ticks: {
+                    callback: function(value) {
+                        return formatCurrency(value);
+                    }
+                }
+            }
+        }
+    };
     
 
     return (
@@ -115,16 +258,28 @@ const Dashboard = () => {
             {/* 자산 배분 차트 */}
             <div className="bg-white p-4 rounded-lg shadow mb-6">
                 <h2 className="text-xl font-semibold mb-3">자산 배분</h2>
-                <div className="h-64 flex justify-center items-center">
-                    <p className="text-gray-400">자산 배분 Pie Chart (데이터 준비됨)</p>
+                <div className="h-64">
+                    {displayData.assetAllocations.length > 0 ? (
+                        <Pie data={pieChartData} options={pieChartOptions} />
+                    ) : (
+                        <div className="h-full flex justify-center items-center">
+                            <p className="text-gray-400">자산 데이터가 없습니다.</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* 자산 추이 차트 */}
             <div className="bg-white p-4 rounded-lg shadow mb-6">
-                 <h2 className="text-xl font-semibold mb-3">자산 추이</h2>
-                <div className="h-64 flex justify-center items-center">
-                    <p className="text-gray-400">자산 추이 Line Chart (데이터 연동 예정)</p>
+                 <h2 className="text-xl font-semibold mb-3">자산 추이 (최근 30일)</h2>
+                <div className="h-64">
+                    {displayData.totalMarketValue > 0 ? (
+                        <Line data={lineChartData} options={lineChartOptions} />
+                    ) : (
+                        <div className="h-full flex justify-center items-center">
+                            <p className="text-gray-400">자산 데이터가 없습니다.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

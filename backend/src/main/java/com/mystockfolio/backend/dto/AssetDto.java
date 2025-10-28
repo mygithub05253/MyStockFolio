@@ -22,10 +22,24 @@ public class AssetDto {
         private Double avgBuyPrice;
         private String name;
         private String assetType;
-        private Long portfolioId;
 
         public Asset toEntity(Portfolio portfolio) {
-            // assetType null 체크
+            // validation: ticker
+            if (ticker == null || ticker.trim().isEmpty()) {
+                throw new IllegalArgumentException("Ticker is required");
+            }
+            
+            // validation: quantity
+            if (quantity == null || quantity <= 0) {
+                throw new IllegalArgumentException("Quantity must be greater than 0");
+            }
+            
+            // validation: avgBuyPrice
+            if (avgBuyPrice == null || avgBuyPrice <= 0) {
+                throw new IllegalArgumentException("Average buy price must be greater than 0");
+            }
+            
+            // validation: assetType
             if (assetType == null || assetType.trim().isEmpty()) {
                 throw new IllegalArgumentException("Asset type is required");
             }
@@ -40,7 +54,7 @@ public class AssetDto {
             return Asset.builder()
                     .portfolio(portfolio)
                     .assetType(type)
-                    .ticker(ticker)
+                    .ticker(ticker.toUpperCase())
                     .name(name)
                     .quantity(quantity)
                     .avgBuyPrice(avgBuyPrice)

@@ -8,12 +8,14 @@ import com.mystockfolio.backend.dto.AssetDto;
 import com.mystockfolio.backend.repository.AssetRepository;
 import com.mystockfolio.backend.repository.PortfolioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AssetService {
@@ -24,10 +26,9 @@ public class AssetService {
     // 특정 포트폴리오의 모든 자산 조회
     @Transactional(readOnly = true)
     public List<AssetDto.AssetResponse> getAssetsByPortfolioId(Long portfolioId) {
-        // TODO: 사용자 권한 확인 로직 추가
-
-        List<Asset> assets = assetRepository.findByPortfolioId(portfolioId); // <-- 수정: findByPortfolioPortfolioId -> findByPortfolioId
-
+        log.debug("자산 목록 조회 시작 - portfolioId: {}", portfolioId);
+        List<Asset> assets = assetRepository.findByPortfolioId(portfolioId);
+        log.debug("자산 목록 조회 완료 - {}개", assets.size());
         return assets.stream()
                 .map(AssetDto.AssetResponse::fromEntity)
                 .collect(Collectors.toList());
@@ -36,18 +37,40 @@ public class AssetService {
     // 새 자산 추가
     @Transactional
     public AssetDto.AssetResponse createAsset(Long portfolioId, AssetDto.AssetCreateRequest requestDto) {
+        log.info("💼 자산 추가 서비스 시작 - portfolioId: {}, ticker: {}", portfolioId, requestDto.getTicker());
+        
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
-                .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found with id: " + portfolioId));
-        // TODO: 사용자 권한 확인 로직 추가
+                .orElseThrow(() -> {
+                    log.error("❌ 포트폴리오를 찾을 수 없음 - portfolioId: {}", portfolioId);
+                    return new ResourceNotFoundException("Portfolio not found with id: " + portfolioId);
+                });
+        
+        log.info("✅ 포트폴리오 조회 성공 - name: {}, userId: {}", portfolio.getName(), portfolio.getUser().getId());
 
-        Asset asset = requestDto.toEntity(portfolio);
+        try {
+            Asset asset = requestDto.toEntity(portfolio);
+            log.info("✅ Entity 변환 완료 - ticker: {}, assetType: {}", asset.getTicker(), asset.getAssetType());
+            
+            // 이름 설정 로직: 요청에 이름이 있으면 그대로 사용, 없으면 티커로 조회
+            if (asset.getName() == null || asset.getName().trim().isEmpty()) {
+                String discoveredName = findAssetNameByTicker(asset.getTicker());
+                asset.setName(discoveredName);
+                log.info("📝 자산 이름 자동 설정: {}", discoveredName);
+            } else {
+                log.info("📝 자산 이름 사용자 지정: {}", asset.getName());
+            }
 
-        asset.setName(findAssetNameByTicker(asset.getTicker()));
+            Asset savedAsset = assetRepository.save(asset);
+            log.info("💾 자산 저장 완료 - assetId: {}", savedAsset.getId());
+            
+            portfolio.addAsset(savedAsset); // 연관관계 편의 메서드 호출
+            log.info("✅ 포트폴리오에 자산 추가 완료");
 
-        Asset savedAsset = assetRepository.save(asset);
-        portfolio.addAsset(savedAsset); // 연관관계 편의 메서드 호출
-
-        return AssetDto.AssetResponse.fromEntity(savedAsset);
+            return AssetDto.AssetResponse.fromEntity(savedAsset);
+        } catch (Exception e) {
+            log.error("❌ 자산 추가 중 오류 발생", e);
+            throw e;
+        }
     }
 
     // 자산 정보 수정

@@ -4,6 +4,7 @@ import com.mystockfolio.backend.config.JwtAuthenticationFilter; // CustomUserDet
 import com.mystockfolio.backend.dto.DashboardDto;
 import com.mystockfolio.backend.service.DashboardService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication; // Authentication import
 import org.springframework.security.core.context.SecurityContextHolder; // SecurityContextHolder import
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class DashboardController {
      */
     @GetMapping("/stats")
     public ResponseEntity<DashboardDto.PortfolioStatsResponse> getPortfolioStats() {
+        log.info("🎯 대시보드 통계 API 호출됨");
 
         // [★★★ 수정: Spring Security Context에서 사용자 ID 추출 ★★★]
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -35,6 +38,7 @@ public class DashboardController {
             // 1. 커스텀 UserDetails를 사용하는 경우 (개발자 모드 포함)
             if (principal instanceof JwtAuthenticationFilter.CustomUserDetails customUserDetails) {
                 userId = customUserDetails.getUserId();
+                log.info("🔑 CustomUserDetails에서 userId 추출: {}", userId);
             }
             // 2. 기본 UserDetails를 사용하는 경우 (실제 JWT 로그인, 이메일로 DB 조회 필요)
             else if (principal instanceof UserDetails userDetails) {
@@ -42,6 +46,7 @@ public class DashboardController {
                 // 현재는 임시로 ID 1L 또는 조회 로직을 생략합니다.
                 // 여기서는 DEV_USER_ID를 사용하도록 임시 처리
                 userId = 1L; // 실제 구현 시 userId = userService.findIdByEmail(userDetails.getUsername()); 로직 필요
+                log.info("🔑 기본 UserDetails, 임시 userId 사용: {}", userId);
             }
         }
 
@@ -50,9 +55,11 @@ public class DashboardController {
             // 이 경로는 SecurityConfig의 authenticated()에 걸리므로, 사실상 도달해서는 안 됨
             // 임시로 DEV ID 강제 지정 (Backend 테스트 편의성 보장)
             userId = 999L;
+            log.warn("⚠️ userId를 추출할 수 없어 기본값 999L 사용");
         }
 
         DashboardDto.PortfolioStatsResponse response = dashboardService.getPortfolioStats(userId);
+        log.info("✅ 대시보드 통계 응답 전송 완료");
         return ResponseEntity.ok(response);
     }
 }
