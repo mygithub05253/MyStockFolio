@@ -5,11 +5,14 @@ import useInput from '../../hooks/useInput';
 import BasicButton from '../../components/button/BasicButton.jsx';
 import { addAsset } from '../../modules/portfolio'; 
 
-// 자산 유형 옵션: 주식/코인/기타 블록체인 자산을 모두 포괄
+// 블록체인 자산 관리 시스템의 자산 유형 옵션
 const ASSET_TYPES = [
-    { value: 'STOCK', label: '주식 (STOCK)' },
-    { value: 'COIN', label: '코인 (COIN)' },
-    { value: 'BLOCKCHAIN', label: '기타 블록체인 자산' }, // 추가적인 유형
+    { value: 'STOCK', label: '주식 (Stock)' },
+    { value: 'COIN', label: '코인/토큰 (Coin)' },
+    { value: 'STABLECOIN', label: '스테이블코인 (Stablecoin)' },
+    { value: 'DEFI', label: '디파이 토큰 (DeFi)' },
+    { value: 'NFT', label: 'NFT' },
+    { value: 'OTHER', label: '기타 블록체인 자산' }
 ];
 
 const AssetInsert = ({ portfolioId, onInsertSuccess }) => {

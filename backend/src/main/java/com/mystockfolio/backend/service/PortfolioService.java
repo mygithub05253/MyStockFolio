@@ -20,13 +20,13 @@ public class PortfolioService {
     private final PortfolioRepository portfolioRepository;
     private final UserRepository userRepository; // 사용자 정보 조회 위해 추가
 
-    // 사용자의 모든 포트폴리오 목록 조회 (간단 버전)
+    // 사용자의 모든 포트폴리오 목록 조회 (자산 포함)
     @Transactional(readOnly = true)
-    public List<PortfolioDto.PortfolioSimpleResponse> getPortfoliosByUserId(Long userId) {
+    public List<PortfolioDto.PortfolioResponse> getPortfoliosByUserId(Long userId) {
         // TODO: 보안 - userId가 실제 로그인한 사용자인지 확인 필요
-        List<Portfolio> portfolios = portfolioRepository.findByUserId(userId); // Repository에 메서드 추가 필요
+        List<Portfolio> portfolios = portfolioRepository.findByUserIdWithAssets(userId); // JOIN FETCH로 assets 함께 로드
         return portfolios.stream()
-                .map(PortfolioDto.PortfolioSimpleResponse::fromEntity)
+                .map(PortfolioDto.PortfolioResponse::fromEntity)
                 .collect(Collectors.toList());
     }
 

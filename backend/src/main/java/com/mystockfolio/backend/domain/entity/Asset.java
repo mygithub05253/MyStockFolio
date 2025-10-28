@@ -23,19 +23,19 @@ public class Asset {
     private Portfolio portfolio;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(name = "asset_type", nullable = false, length = 15)
     private AssetType assetType;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "ticker", nullable = false, length = 20)
     private String ticker;
 
-    @Column(length = 100)
+    @Column(name = "name", length = 100)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "quantity", nullable = false)
     private Double quantity;
 
-    @Column(nullable = false)
+    @Column(name = "avg_buy_price", nullable = false)
     private Double avgBuyPrice;
 
     @Builder

@@ -85,7 +85,7 @@ function portfolio(state = initialState, action) {
                     return p;
                 }
                 
-                let newAssets = [...p.assets];
+                let newAssets = [...(p.assets || [])];
 
                 if (action.type === ADD_ASSET) {
                     newAssets = [...newAssets, asset]; // 목록에 추가
