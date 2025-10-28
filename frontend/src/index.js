@@ -1,27 +1,23 @@
 import React from 'react';
-import App from './App';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import App from './App.jsx';
 import reportWebVitals from './reportWebVitals';
-
-// redux 코드 추가
+import { RouterProvider } from 'react-router-dom';
+import router from './routes/router';
 import { Provider } from 'react-redux';
-import { devToolsEnhancer } from '@redux-devtools/extension';
-import { legacy_createStore as createStore } from 'redux';
-import rootReducer from './modules';
-
-const store = createStore(rootReducer, devToolsEnhancer());
+import { legacy_createStore as createStore } from 'redux'; // createStore import
+import rootReducer from './modules'; // rootReducer import 확인
+import store from './store';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <>
-    <Provider store={store}>
-      <App />
+  <React.StrictMode>
+    <Provider store={store}> {/* Provider로 App 감싸기 */}
+      {/* App 대신 RouterProvider 사용 */}
+      <RouterProvider router={router} />
     </Provider>
-  </>
+  </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();

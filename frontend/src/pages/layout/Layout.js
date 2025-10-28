@@ -1,20 +1,12 @@
 import React from 'react';
-import { faBell, faHouse, faListCheck, faSearch, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faHouse, faListCheck, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { setPreviousUrl } from '../../modules/user';
+import { useSelector } from 'react-redux';
 
 const Layout = () => {
   const location = useLocation();
-
-  // --- 임시 로그인 상태 ---
-  const isLoggedIn = location.pathname !== '/'; // 루트 경로가 아니면 로그인했다고 가정
-
-  // 비로그인 상태이고 메인 페이지('/')가 아니면 로그인 페이지로 리다이렉트 (선택 사항)
-  // if (!isLoggedIn && location.pathname !== '/') {
-  //   return <Navigate to="/signIn" replace />;
-  // }
+  const isLoggedIn = useSelector(state => state.user.isLoggedIn);
 
   return (
     <div className="flex items-center justify-center w-full min-h-screen bg-gray-100">
@@ -24,10 +16,8 @@ const Layout = () => {
         </header>
 
         {/* 메인 콘텐츠 영역: 로그인 상태에 따라 스타일 변경 */}
-        <main className={`flex-1 overflow-y-auto ${isLoggedIn ? '' : 'flex'}`}>
-          {/* 비로그인 상태이고 루트 경로일 때만 Main 컴포넌트 렌더링 */}
-          {/* <Outlet /> 대신 아래 로직 사용 */}
-          {isLoggedIn ? <Outlet /> : (location.pathname === '/' ? <Outlet /> : null)}
+        <main className={`flex-1 overflow-y-auto ${location.pathname === '/' && !isLoggedIn ? 'flex' : ''}`}>
+          <Outlet />
         </main>
 
         {/* 하단 네비게이션: 로그인 상태일 때만 보이도록 함 */}
