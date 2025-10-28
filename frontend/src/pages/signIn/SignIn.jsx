@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../api/axiosInstance'; // axiosInstance 사용
-import useInput from '../../hooks/useInput'; // useInput hook 사용
-import BasicButton from '../../components/button/BasicButton'; // BasicButton 컴포넌트 사용
+import axiosInstance from '../../api/axiosInstance'; 
+import useInput from '../../hooks/useInput'; 
+import BasicButton from '../../components/button/BasicButton.jsx'; 
 
 // Redux 추가
 import { useDispatch } from 'react-redux';
-import { loginSuccess } from '../../modules/user'; // loginSuccess 액션 import
+import { loginSuccess } from '../../modules/user'; 
 
 // 소셜 로그인 아이콘 import
 import googleIcon from '../../assets/images/google.png';
@@ -16,10 +16,10 @@ import metaMaskIcon from '../../assets/images/metamask.png';
 
 const SignIn = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch(); // useDispatch 훅 사용
+    const dispatch = useDispatch();
     const [email, onChangeEmail] = useInput('');
     const [password, onChangePassword] = useInput('');
-    const [error, setError] = useState('');
+    const [error, setError] = useState(''); 
 
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -30,67 +30,58 @@ const SignIn = () => {
             return;
         }
 
-        // 🚧 임시 개발용: dev@test.com / dev123 으로 로그인하면 개발 모드 로그인 (추후 제거)
-        if (email === 'dev@test.com' && password === 'dev123') {
-            localStorage.setItem('accessToken', 'DEV_TOKEN');
-            dispatch(loginSuccess({ userId: 999, email: 'dev@test.com', nickname: '개발자' }));
-            alert('🚧 개발 모드: 임시 로그인 완료!');
-            navigate('/dashboard');
-            return;
-        }
-
         try {
+            // [기존 기능 유지] 백엔드 로그인 API 호출
             const response = await axiosInstance.post('/api/auth/login', {
                 email: email,
                 password: password
             });
 
-            // 응답 데이터에서 필요한 정보 추출
             const { accessToken, userId, email: userEmail, nickname } = response.data;
 
             if (accessToken) {
-                // 1. localStorage에 accessToken 저장
                 localStorage.setItem('accessToken', accessToken);
-
-                // 2. Redux 스토어에 로그인 성공 상태 및 사용자 정보 저장
                 dispatch(loginSuccess({ userId, email: userEmail, nickname }));
 
-                console.log('로그인 성공:', response.data);
                 alert(`${nickname || '사용자'}님, 환영합니다!`);
-                navigate('/dashboard');
+                navigate('/dashboard'); 
             } else {
                  setError('로그인 응답에 액세스 토큰이 없습니다.');
             }
 
         } catch (err) {
             console.error('로그인 실패:', err.response ? err.response.data : err.message);
-            // 🚧 개발 모드 안내 추가
-            const errorMessage = err.response?.data?.error || '백엔드 서버가 실행되지 않았습니다. 개발 모드를 사용하려면 이메일: dev@test.com / 비밀번호: dev123 으로 로그인하세요.';
-            setError(errorMessage);
+            const errorMessage = err.response?.data?.error || '로그인 중 오류가 발생했습니다. 다시 시도해주세요.';
+            setError(errorMessage); 
         }
     };
-
-    // ... (소셜/지갑 로그인 핸들러 및 JSX는 이전과 동일) ...
-     // 소셜 로그인 버튼 클릭 핸들러 (현재는 기능 없음)
-    const handleSocialLogin = (provider) => {
-        alert(`${provider} 로그인은 현재 지원되지 않습니다.`);
-        // TODO: 각 소셜 로그인 API 연동 구현
-        // window.location.href = `/oauth2/authorization/${provider}`; // 백엔드 OAuth2 엔드포인트로 리다이렉션
+    
+    // [★★★ 개발자 모드 로그인 핸들러 (유지) ★★★]
+    const handleDevLogin = () => {
+        // 백엔드 연동 없이 임시 토큰/상태 설정
+        localStorage.setItem('accessToken', 'DEV_TOKEN_12345'); 
+        dispatch(loginSuccess({ userId: 999, email: 'dev@folio.com', nickname: 'DEV_USER' }));
+        alert('개발자 모드로 로그인되었습니다. 기능 확인 후 요청 시 이 버튼은 제거됩니다.');
+        navigate('/dashboard');
     };
 
-    // 지갑 로그인 버튼 클릭 핸들러 (현재는 기능 없음)
+    // 소셜 로그인 버튼 클릭 핸들러 (이전과 동일)
+    const handleSocialLogin = (provider) => {
+        alert(`${provider} 로그인은 현재 지원되지 않습니다.`);
+    };
+
+    // 지갑 로그인 버튼 클릭 핸들러 (이전과 동일)
     const handleWalletLogin = () => {
         alert('MetaMask 로그인은 현재 지원되지 않습니다.');
-        // TODO: MetaMask 연동 및 백엔드 지갑 인증 API 호출 구현
     };
 
     return (
-        <div className="flex flex-col w-full h-full justify-center py-8">
-            <div className="w-full space-y-6">
+        <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
                 <h2 className="text-2xl font-bold text-center text-gray-900">
                     로그인
                 </h2>
-                <form className="space-y-6" onSubmit={onSubmit}>
+                <form className="space-y-4" onSubmit={onSubmit}>
                     <div>
                         <label
                             htmlFor="email"
@@ -106,7 +97,7 @@ const SignIn = () => {
                             required
                             value={email}
                             onChange={onChangeEmail}
-                            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" 
                             placeholder="you@example.com"
                         />
                     </div>
@@ -140,6 +131,11 @@ const SignIn = () => {
                         로그인
                     </BasicButton>
                 </form>
+                
+                {/* [★★★ 개발자 모드 로그인 버튼 ★★★] */}
+                <BasicButton onClick={handleDevLogin} className="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-sm">
+                    개발자 모드 (FE 테스트용)
+                </BasicButton>
 
                 <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
@@ -172,6 +168,7 @@ const SignIn = () => {
                     </button>
                 </div>
 
+                {/* 회원가입 링크 (로그인 화면 하단에 유지) */}
                 <div className="text-sm text-center">
                     <span className="text-gray-600">계정이 없으신가요? </span>
                     <button

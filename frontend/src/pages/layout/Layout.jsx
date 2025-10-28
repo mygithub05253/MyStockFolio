@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { loginSuccess, logout } from '../../modules/user'; 
+// 아이콘 import (react-icons/fi 설치 가정)
 import { FiHome, FiBriefcase, FiTrendingUp, FiGift, FiUser } from 'react-icons/fi';
 
 
@@ -9,8 +10,7 @@ const Layout = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    // userInfo도 함께 확인하여 상태가 비어있는지 확인
-    const { isLoggedIn, userInfo } = useSelector(state => state.user); 
+    const { isLoggedIn } = useSelector(state => state.user); 
 
     // [Redux 상태 초기화 및 라우팅 분기 로직]
     useEffect(() => {
@@ -30,6 +30,7 @@ const Layout = () => {
             }
 
             // 2. 경로별 리다이렉션 처리 (라우팅 제어)
+            // [문제 해결] 비로그인 시 메인 화면이 나오도록 경로 제어
             if (location.pathname === '/') {
                 if (isLoggedIn) {
                     // 로그인 상태: / -> /dashboard로 리다이렉트
@@ -42,7 +43,7 @@ const Layout = () => {
                  navigate('/dashboard', { replace: true });
                  
             } else {
-                 // 보호된 경로로 접근 시 비로그인 상태이면 리다이렉트 (추가적인 안전장치)
+                 // 보호된 경로로 접근 시 비로그인 상태이면 리다이렉트
                  const protectedPaths = ['/dashboard', '/portfolio', '/market', '/rewards', '/mypage'];
                  if (protectedPaths.includes(location.pathname) && !isLoggedIn) {
                      navigate('/', { replace: true });
@@ -50,13 +51,12 @@ const Layout = () => {
             }
         };
 
-        // DOM이 완전히 로드된 후 실행되도록 setTimeout을 사용하지 않고 useEffect 자체의 의존성 배열에 의존합니다.
         checkAuthAndRedirect();
         
     }, [location.pathname, isLoggedIn, navigate, dispatch]);
 
 
-    // 네비게이션 아이템 정의 (이전과 동일)
+    // 네비게이션 아이템 정의 
     const navItems = [
         { path: '/dashboard', icon: FiHome, label: '대시보드' },
         { path: '/portfolio', icon: FiBriefcase, label: '포트폴리오' },
@@ -76,8 +76,7 @@ const Layout = () => {
     };
 
     return (
-        // 모바일 뷰 최상위 컨테이너
-        // max-w-md와 mx-auto를 Layout에 적용하여 모바일 뷰를 모든 페이지에 강제합니다.
+        // 모바일 뷰 최상위 컨테이너: max-w-md와 mx-auto를 Layout에 적용
         <div className="flex flex-col min-h-screen max-w-md mx-auto shadow-lg bg-gray-50"> 
             {/* 페이지 컨텐츠 영역 */}
             <main className="flex-grow pb-16"> 

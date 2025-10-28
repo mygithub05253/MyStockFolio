@@ -13,19 +13,13 @@ const Main = () => {
             {/* 상단 버튼 영역 (모바일 최적화) */}
             <header className="absolute top-0 right-0 p-4 w-full max-w-md mx-auto">
                 {!isLoggedIn && (
-                    // [버튼 간격 및 정렬 수정]: justify-end 및 space-x-3 적용
+                    // [1. 회원가입 버튼 제거 완료]
                     <div className="flex justify-end space-x-3"> 
                         <BasicButton
                             onClick={() => navigate('/signin')}
                             className="text-sm bg-transparent hover:bg-indigo-50 text-indigo-600 border border-indigo-600 px-3 py-1"
                         >
                             로그인
-                        </BasicButton>
-                        <BasicButton
-                            onClick={() => navigate('/signup')}
-                            className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1"
-                        >
-                            회원가입
                         </BasicButton>
                     </div>
                 )}
@@ -34,6 +28,7 @@ const Main = () => {
             <div className="max-w-md w-full mt-20"> 
                 {/* 메인 콘텐츠 */}
                 <img
+                    // [★★★ 이미지 경로 오류 수정 반영: public 기준 절대 경로 사용 ★★★]
                     src="/images/main/penguin.png" 
                     alt="MyStockFolio 펭귄 로고"
                     className="mx-auto w-48 h-48 mb-6"
