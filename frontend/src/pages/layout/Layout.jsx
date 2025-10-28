@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { loginSuccess, logout } from '../../modules/user'; // Redux 액션
+import { loginSuccess, logout } from '../../modules/user'; 
 import { FiHome, FiBriefcase, FiTrendingUp, FiGift, FiUser } from 'react-icons/fi';
 
 
@@ -9,44 +9,54 @@ const Layout = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { isLoggedIn } = useSelector(state => state.user);
+    // userInfo도 함께 확인하여 상태가 비어있는지 확인
+    const { isLoggedIn, userInfo } = useSelector(state => state.user); 
 
     // [Redux 상태 초기화 및 라우팅 분기 로직]
     useEffect(() => {
         const checkAuthAndRedirect = () => {
             const token = localStorage.getItem('accessToken');
             
-            // 1. 초기 로그인 상태 설정 및 상태 동기화 (새로고침 대응)
+            // 1. 초기 로그인 상태 동기화 (새로고침 대응)
             if (token && !isLoggedIn) {
-                // 토큰이 있을 경우, Redux 상태를 로그인 상태로 설정
-                // TODO: 실제 구현 시 GET /api/user/info API를 호출하여 사용자 정보를 받아와야 함 (P2 단계 목표)
-                const tempUserInfo = { userId: null, email: 'temp@user.com', nickname: '사용자' }; 
+                // 토큰이 있지만 Redux 상태가 없으면, 로그인 복구 시도
+                // **TODO: P2 단계에서 GET /api/user/info API 호출로 대체되어야 함**
+                const tempUserInfo = { userId: 1, email: 'restored@user.com', nickname: '복구 사용자' }; 
                 dispatch(loginSuccess(tempUserInfo)); 
+                
             } else if (!token && isLoggedIn) {
-                // 토큰이 없는데 Redux 상태만 있다면, Redux 상태를 확실히 로그아웃으로 초기화
+                // 토큰이 없는데 Redux 상태만 남아있다면, 확실하게 로그아웃 처리
                 dispatch(logout());
             }
 
             // 2. 경로별 리다이렉션 처리 (라우팅 제어)
-            if (isLoggedIn) {
-                // 로그인 상태일 때: /, /signin, /signup으로 접근 시 -> /dashboard로 이동
-                if (location.pathname === '/' || location.pathname === '/signin' || location.pathname === '/signup') {
+            if (location.pathname === '/') {
+                if (isLoggedIn) {
+                    // 로그인 상태: / -> /dashboard로 리다이렉트
                     navigate('/dashboard', { replace: true });
                 }
+                // 비로그인 상태: /에 머무름 (Main.jsx 표시)
+                
+            } else if ((location.pathname === '/signin' || location.pathname === '/signup') && isLoggedIn) {
+                 // 로그인/회원가입 페이지에 로그인 상태로 접근 시 대시보드로 리다이렉트
+                 navigate('/dashboard', { replace: true });
+                 
             } else {
-                 // 비로그인 상태일 때: 보호된 경로로 접근 시 -> /로 이동 (Main.jsx)
+                 // 보호된 경로로 접근 시 비로그인 상태이면 리다이렉트 (추가적인 안전장치)
                  const protectedPaths = ['/dashboard', '/portfolio', '/market', '/rewards', '/mypage'];
-                 if (protectedPaths.includes(location.pathname)) {
+                 if (protectedPaths.includes(location.pathname) && !isLoggedIn) {
                      navigate('/', { replace: true });
                  }
             }
         };
 
+        // DOM이 완전히 로드된 후 실행되도록 setTimeout을 사용하지 않고 useEffect 자체의 의존성 배열에 의존합니다.
         checkAuthAndRedirect();
+        
     }, [location.pathname, isLoggedIn, navigate, dispatch]);
 
 
-    // 네비게이션 아이템 정의 
+    // 네비게이션 아이템 정의 (이전과 동일)
     const navItems = [
         { path: '/dashboard', icon: FiHome, label: '대시보드' },
         { path: '/portfolio', icon: FiBriefcase, label: '포트폴리오' },
@@ -55,7 +65,7 @@ const Layout = () => {
         { path: '/mypage', icon: FiUser, label: '마이페이지' },
     ];
 
-    // CSS 클래스 생성
+    // CSS 클래스 생성 (이전과 동일)
     const getLinkClass = (path) => {
         // 모바일 뷰 우선
         let classes = "flex flex-col items-center justify-center flex-1 px-2 py-1 text-xs sm:text-sm text-gray-500 hover:text-indigo-600";
@@ -67,9 +77,9 @@ const Layout = () => {
 
     return (
         // 모바일 뷰 최상위 컨테이너
+        // max-w-md와 mx-auto를 Layout에 적용하여 모바일 뷰를 모든 페이지에 강제합니다.
         <div className="flex flex-col min-h-screen max-w-md mx-auto shadow-lg bg-gray-50"> 
             {/* 페이지 컨텐츠 영역 */}
-            {/* pb-16: 하단 네비게이션바 높이만큼 패딩 확보 (모바일 뷰 유지 핵심) */}
             <main className="flex-grow pb-16"> 
                 <Outlet />
             </main>
