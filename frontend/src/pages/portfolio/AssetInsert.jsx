@@ -18,8 +18,8 @@ const ASSET_TYPES = [
 const AssetInsert = ({ portfolioId, onInsertSuccess }) => {
     const dispatch = useDispatch();
     const [ticker, onChangeTicker, setTicker] = useInput('');
-    const [quantity, onChangeQuantity, setQuantity] = useInput(0);
-    const [avgBuyPrice, onChangeAvgBuyPrice, setAvgBuyPrice] = useInput(0);
+    const [quantity, onChangeQuantity, setQuantity] = useInput('');
+    const [avgBuyPrice, onChangeAvgBuyPrice, setAvgBuyPrice] = useInput('');
     const [assetType, setAssetType] = useState(ASSET_TYPES[0].value); // 기본값 설정
     const [name, onChangeName, setName] = useInput(''); 
     const [error, setError] = useState('');
@@ -32,21 +32,41 @@ const AssetInsert = ({ portfolioId, onInsertSuccess }) => {
         e.preventDefault();
         setError('');
 
-        if (!ticker.trim() || parseFloat(quantity) <= 0 || parseFloat(avgBuyPrice) <= 0) {
-            setError('티커, 수량, 매입 가격을 올바르게 입력해주세요.');
+        // Validation
+        const parsedQuantity = parseFloat(quantity);
+        const parsedAvgBuyPrice = parseFloat(avgBuyPrice);
+
+        if (!ticker.trim()) {
+            setError('티커를 입력해주세요.');
             return;
         }
 
+        if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+            setError('보유 수량은 0보다 커야 합니다.');
+            return;
+        }
+
+        if (isNaN(parsedAvgBuyPrice) || parsedAvgBuyPrice <= 0) {
+            setError('평균 매입 가격은 0보다 커야 합니다.');
+            return;
+        }
+
+        const requestData = {
+            ticker: ticker.toUpperCase(),
+            quantity: parsedQuantity,
+            avgBuyPrice: parsedAvgBuyPrice,
+            assetType: assetType,
+            name: name.trim() || null 
+        };
+
+        console.log('➕ 자산 추가 요청:', requestData);
+        console.log('   Portfolio ID:', portfolioId);
+
         try {
             // [API 호출]: POST /api/portfolios/{portfolioId}/assets
-            const response = await axiosInstance.post(`/api/portfolios/${portfolioId}/assets`, {
-                ticker: ticker.toUpperCase(),
-                quantity: parseFloat(quantity),
-                avgBuyPrice: parseFloat(avgBuyPrice),
-                assetType: assetType, // 선택된 자산 유형 전달
-                name: name.trim() || null 
-            });
+            const response = await axiosInstance.post(`/api/portfolios/${portfolioId}/assets`, requestData);
 
+            console.log('✅ 자산 추가 성공:', response.data);
             const newAsset = response.data;
             
             // Redux 상태 업데이트
@@ -56,16 +76,20 @@ const AssetInsert = ({ portfolioId, onInsertSuccess }) => {
             
             // 성공 후 입력 폼 초기화 및 자산 목록 보기로 전환
             setTicker('');
-            setQuantity(0);
-            setAvgBuyPrice(0);
+            setQuantity('');
+            setAvgBuyPrice('');
             setName('');
             if (onInsertSuccess) {
                 onInsertSuccess();
             }
 
         } catch (error) {
-            console.error("자산 추가 실패:", error.response ? error.response.data : error.message);
-            const errorMessage = error.response?.data?.error || '자산 추가 중 오류가 발생했습니다.';
+            console.error("❌ 자산 추가 실패:", error);
+            console.error("   응답 데이터:", error.response?.data);
+            console.error("   상태 코드:", error.response?.status);
+            console.error("   에러 메시지:", error.message);
+            
+            const errorMessage = error.response?.data?.error || error.message || '자산 추가 중 오류가 발생했습니다.';
             setError(errorMessage);
         }
     };

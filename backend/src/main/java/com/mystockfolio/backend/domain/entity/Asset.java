@@ -35,7 +35,7 @@ public class Asset {
     @Column(name = "quantity", nullable = false)
     private Double quantity;
 
-    @Column(name = "avg_buy_price", nullable = false)
+    @Column(name = "avgBuyPrice", nullable = false)
     private Double avgBuyPrice;
 
     @Builder

@@ -3,12 +3,14 @@ package com.mystockfolio.backend.controller;
 import com.mystockfolio.backend.dto.AssetDto;
 import com.mystockfolio.backend.service.AssetService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/portfolios/{portfolioId}/assets")// 프론트엔드 요청 경로에 맞춤
 @RequiredArgsConstructor
@@ -19,8 +21,9 @@ public class AssetController {
     // 특정 포트폴리오의 모든 자산 조회 (GET /api/portfolio/assets?portfolioId=1)
     @GetMapping
     public ResponseEntity<List<AssetDto.AssetResponse>> getAssets(@PathVariable Long portfolioId) {
-        // TODO: portfolioId가 현재 로그인한 사용자의 것인지 Service에서 확인하도록 수정
+        log.info("🔍 자산 목록 조회 - portfolioId: {}", portfolioId);
         List<AssetDto.AssetResponse> assets = assetService.getAssetsByPortfolioId(portfolioId);
+        log.info("✅ 자산 목록 조회 완료 - {}개", assets.size());
         return ResponseEntity.ok(assets);
     }
 
@@ -28,9 +31,13 @@ public class AssetController {
     @PostMapping
     public ResponseEntity<AssetDto.AssetResponse> createAsset(@PathVariable Long portfolioId,
                                                               @RequestBody AssetDto.AssetCreateRequest requestDto) {
-        // TODO: portfolioId가 현재 로그인한 사용자의 것인지 Service에서 확인하도록 수정
+        log.info("➕ 자산 추가 요청 - portfolioId: {}", portfolioId);
+        log.info("   - ticker: {}, assetType: {}, quantity: {}, avgBuyPrice: {}, name: {}", 
+            requestDto.getTicker(), requestDto.getAssetType(), requestDto.getQuantity(), 
+            requestDto.getAvgBuyPrice(), requestDto.getName());
+        
         AssetDto.AssetResponse createdAsset = assetService.createAsset(portfolioId, requestDto);
-        // 생성 성공 시 201 Created 상태 코드와 함께 생성된 자원 반환
+        log.info("✅ 자산 추가 완료 - assetId: {}, name: {}", createdAsset.getId(), createdAsset.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdAsset);
     }
 

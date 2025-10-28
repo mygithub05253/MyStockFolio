@@ -6,6 +6,7 @@ import com.mystockfolio.backend.domain.entity.Portfolio;
 import com.mystockfolio.backend.dto.DashboardDto;
 import com.mystockfolio.backend.repository.PortfolioRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
@@ -23,15 +25,34 @@ public class DashboardService {
     // 사용자의 포트폴리오 통계 계산 (동기 방식으로 간소화)
     @Transactional(readOnly = true)
     public DashboardDto.PortfolioStatsResponse getPortfolioStats(Long userId) {
+        log.info("📊 대시보드 통계 조회 시작 - userId: {}", userId);
+        
         // 1. 사용자 ID로 모든 포트폴리오 조회 (자산 포함 - JOIN FETCH)
         List<Portfolio> portfolios = portfolioRepository.findByUserIdWithAssets(userId);
+        log.info("📁 포트폴리오 개수: {}", portfolios.size());
+        
+        // 각 포트폴리오의 자산 개수 로깅
+        for (Portfolio portfolio : portfolios) {
+            log.info("  - 포트폴리오 '{}' (ID: {}): 자산 {}개", 
+                portfolio.getName(), portfolio.getId(), portfolio.getAssets().size());
+            for (Asset asset : portfolio.getAssets()) {
+                log.info("    • {} ({}) - {}개 @ ₩{}", 
+                    asset.getName(), asset.getTicker(), asset.getQuantity(), asset.getAvgBuyPrice());
+            }
+        }
         
         // 2. 통계 계산
-        return calculateStats(portfolios);
+        DashboardDto.PortfolioStatsResponse response = calculateStats(portfolios);
+        log.info("💰 계산된 통계 - 총 자산: ₩{}, 수익률: {}%, 자산 배분 항목: {}개", 
+            response.getTotalMarketValue(), response.getTotalReturnRate(), 
+            response.getAssetAllocations() != null ? response.getAssetAllocations().size() : 0);
+        
+        return response;
     }
 
     // 통계 계산 로직 (실제 자산 데이터 기반)
     private DashboardDto.PortfolioStatsResponse calculateStats(List<Portfolio> portfolios) {
+        log.info("🧮 통계 계산 시작");
         double totalInitialInvestment = 0.0;
         double totalMarketValue = 0.0;
         
@@ -39,8 +60,10 @@ public class DashboardService {
         Map<AssetType, Double> assetTypeMarketValues = new HashMap<>();
         
         // 모든 포트폴리오의 모든 자산 순회
+        int totalAssetCount = 0;
         for (Portfolio portfolio : portfolios) {
             for (Asset asset : portfolio.getAssets()) {
+                totalAssetCount++;
                 // 초기 투자금 계산
                 double investmentValue = asset.getQuantity() * asset.getAvgBuyPrice();
                 totalInitialInvestment += investmentValue;
@@ -52,16 +75,24 @@ public class DashboardService {
                 double marketValue = asset.getQuantity() * currentPrice;
                 totalMarketValue += marketValue;
                 
+                log.debug("  자산: {} ({}) - 투자금: ₩{}, 현재가치: ₩{}", 
+                    asset.getName(), asset.getAssetType(), investmentValue, marketValue);
+                
                 // 자산 유형별 집계
                 assetTypeMarketValues.merge(asset.getAssetType(), marketValue, Double::sum);
             }
         }
+        
+        log.info("💼 총 자산 개수: {}", totalAssetCount);
+        log.info("💰 총 투자금: ₩{}, 총 시장가치: ₩{}", totalInitialInvestment, totalMarketValue);
         
         // 손익 및 수익률 계산
         double totalGainLoss = totalMarketValue - totalInitialInvestment;
         double totalReturnRate = (totalInitialInvestment > 0) 
             ? (totalGainLoss / totalInitialInvestment) * 100.0 
             : 0.0;
+        
+        log.info("📈 손익: ₩{}, 수익률: {}%", totalGainLoss, totalReturnRate);
         
         // 자산 배분 리스트 생성 (Pie Chart용)
         List<DashboardDto.AssetAllocation> assetAllocations = new ArrayList<>();
@@ -70,12 +101,18 @@ public class DashboardService {
                 ? (entry.getValue() / totalMarketValue) * 100.0 
                 : 0.0;
             
-            assetAllocations.add(DashboardDto.AssetAllocation.builder()
+            DashboardDto.AssetAllocation allocation = DashboardDto.AssetAllocation.builder()
                     .assetType(entry.getKey().name())
                     .value(entry.getValue())
                     .percentage(percentage)
-                    .build());
+                    .build();
+            assetAllocations.add(allocation);
+            
+            log.info("📊 자산 배분 - {}: ₩{} ({}%)", 
+                entry.getKey().name(), entry.getValue(), percentage);
         }
+        
+        log.info("✅ 통계 계산 완료 - 자산 배분 항목: {}개", assetAllocations.size());
         
         return DashboardDto.PortfolioStatsResponse.builder()
                 .totalMarketValue(totalMarketValue)
