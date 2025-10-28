@@ -1,125 +1,129 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import BasicButton from "../../components/button/BasicButton.jsx";
-import { Link, useNavigate } from 'react-router-dom'; // useNavigate 임포트 추가
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../../api/axiosInstance'; // axiosInstance 사용
+import useInput from '../../hooks/useInput';
+import BasicButton from '../../components/button/BasicButton.jsx';
 
 const SignUp = () => {
-  const { register, handleSubmit, getValues, formState: { errors } } = useForm({ mode : "onchange" });
-  const navigate = useNavigate(); // useNavigate 훅 사용
+    const navigate = useNavigate();
+    const [email, onChangeEmail] = useInput('');
+    const [password, onChangePassword] = useInput('');
+    const [passwordConfirm, onChangePasswordConfirm] = useInput('');
+    const [nickname, onChangeNickname] = useInput('');
+    const [walletAddress, onChangeWalletAddress] = useInput('');
+    const [error, setError] = useState('');
 
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-  const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[!@#])[\da-zA-Z!@#]{8,}$/;
+    const onSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
 
-  // 회원가입 제출 핸들러 (API 호출 활성화)
-  const onSubmit = async (data) => {
-    console.log("회원가입 시도:", data);
+        // 1. 프론트엔드 유효성 검사
+        if (password !== passwordConfirm) {
+            setError('비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+            return;
+        }
+        if (!email || !password || !nickname) {
+            setError('필수 정보를 모두 입력해주세요.');
+            return;
+        }
+        if (password.length < 8) {
+            setError('비밀번호는 8자 이상이어야 합니다.');
+            return;
+        }
 
-    // passwordConfirm 필드는 백엔드로 보낼 필요 없음 (프론트 검증용)
-    const { passwordConfirm, ...submitData } = data;
+        try {
+            // 2. 백엔드 회원가입 API 호출
+            const response = await axiosInstance.post('/api/auth/register', {
+                email,
+                password,
+                passwordConfirm,
+                nickname,
+                walletAddress: walletAddress || null 
+            });
 
-    try {
-      // 👇 주석 해제 및 API 호출 실행
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // passwordConfirm 제외한 데이터 전송
-        body: JSON.stringify(submitData),
-      });
+            // 3. 성공 처리
+            console.log('회원가입 성공:', response.data);
+            alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
+            navigate('/signin'); 
 
-      if (response.ok) {
-        alert('회원가입 성공! 로그인 페이지로 이동합니다.');
-        navigate('/signIn'); // 로그인 페이지로 이동
-      } else {
-        // 회원가입 실패 처리 (백엔드 에러 메시지 활용)
-        const errorData = await response.json(); // 백엔드가 에러 메시지를 JSON으로 보낸다고 가정
-        alert(`회원가입 실패: ${errorData.message || '입력 정보를 확인하세요.'}`);
-      }
-      // alert('회원가입 기능 구현 예정입니다.'); // 👈 임시 알림 제거
-    } catch (error) {
-      console.error("회원가입 요청 중 오류 발생:", error);
-      // 🚧 개발 모드 안내
-      alert("백엔드 서버가 실행되지 않았습니다.\n개발 모드를 사용하려면:\n1. 메인 페이지에서 '🚧 개발자 모드 로그인' 버튼 클릭\n2. 또는 로그인 페이지에서 이메일: dev@test.com / 비밀번호: dev123 입력");
-    }
-  };
-
-
-  return (
-    <form className="w-full py-8" onSubmit={handleSubmit(onSubmit)}>
-
-      <label className="block w-full mb-8">
-        <p className="text-base font-semibold text-gray-800 mb-3">이메일</p>
-        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none"
-          type="text" id="email" name="email" placeholder="아이디를 입력하세요."
-          {...register("email", { required : true, pattern : { value : emailRegex } })}
-        />
-        {errors?.email?.type === "required" && (<p className="text-xs text-purple-600 pt-2.5">이메일을 입력해주세요.</p>)}
-        {errors?.email?.type === "pattern" && (<p className="text-xs text-purple-600 pt-2.5">이메일 양식에 맞게 입력해주세요.</p>)}
-      </label>
-
-      {/* 닉네임 필드 추가 (백엔드 AuthDto.SignUpRequest 에 맞춰) */}
-      <label className="block w-full mb-8">
-        <p className="text-base font-semibold text-gray-800 mb-3">닉네임</p>
-        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none"
-          type="text" id="nickname" name="nickname" placeholder="사용할 닉네임을 입력하세요."
-          {...register("nickname", { required : "닉네임을 입력해주세요." })} // 필수 입력 및 메시지 추가
-        />
-        {errors.nickname && (<p className="text-xs text-purple-600 pt-2.5">{errors.nickname.message}</p>)}
-      </label>
-
-      <label className="block w-full mb-8">
-        <p className="text-base font-semibold text-gray-800 mb-3">비밀번호</p>
-        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none"
-          type="password" id="password" name="password" placeholder="비밀번호를 입력하세요."
-          {...register("password", { required : true, pattern : { value : passwordRegex } })}
-        />
-        {errors?.password?.type === "required" && (<p className="text-xs text-purple-600 pt-2.5">비밀번호를 입력해주세요.</p>)}
-        {errors?.password?.type === "pattern" && (<p className="text-xs text-purple-600 pt-2.5">소문자, 숫자, 특수문자(!@#) 포함 8자 이상이어야 합니다.</p>)}
-      </label>
-
-      <label className="block w-full mb-8">
-        <p className="text-base font-semibold text-gray-800 mb-3">비밀번호 확인</p>
-        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none"
-          type="password" placeholder="비밀번호를 확인해주세요."
-          {...register("passwordConfirm", {
-            required : "비밀번호 확인을 입력해주세요.", // 메시지 추가
-            validate : {
-              matchPassword : (value) => {
-                const { password } = getValues();
-                return password === value || "비밀번호가 일치하지 않습니다.";
-              }
+        } catch (err) {
+            console.error('회원가입 실패:', err.response ? err.response.data : err.message);
+            
+            let errorMessage = '회원가입 중 알 수 없는 오류가 발생했습니다.';
+            
+            if (err.response && err.response.data) {
+                // 백엔드 GlobalExceptionHandler의 오류 메시지 처리
+                 if (err.response.data.error) {
+                    errorMessage = err.response.data.error; 
+                 } else if (err.response.data.email) {
+                     // @Valid 유효성 검사 실패 시 (400 Bad Request)
+                     errorMessage = `이메일 오류: ${err.response.data.email}`;
+                 }
             }
-          })}
-        />
-        {errors.passwordConfirm && (<p className="text-xs text-purple-600 pt-2.5">{errors.passwordConfirm.message}</p>)}
-      </label>
+            
+            setError(errorMessage);
+        }
+    };
 
-      <label className="block w-full mb-8">
-        <p className="text-base font-semibold text-gray-800 mb-3">블록체인 지갑 주소 (선택)</p>
-        <input className="w-full aspect-[8/1] rounded-lg bg-gray-100 text-gray-900 px-4 border-none"
-          type="text" placeholder="MetaMask 지갑 주소를 입력하세요. (예: 0x...)"
-          {...register("walletAddress", {
-             // 간단한 지갑 주소 형식 검사 (선택 사항)
-             pattern: {
-               value: /^0x[a-fA-F0-9]{40}$/,
-               message: "올바른 지갑 주소 형식이 아닙니다."
-             }
-          })}
-        />
-         {errors.walletAddress && (<p className="text-xs text-purple-600 pt-2.5">{errors.walletAddress.message}</p>)}
-      </label>
+    return (
+        // [모바일 최적화 반영] - min-h-screen와 p-4를 사용하여 모바일 전체 뷰 확보 및 중앙 정렬
+        <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4"> 
+            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+                <h2 className="text-2xl font-bold text-center text-gray-900">
+                    회원가입
+                </h2>
+                <form className="space-y-4" onSubmit={onSubmit}>
+                    {/* 이메일 */}
+                    <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">이메일 주소 *</label>
+                        <input id="email" name="email" type="email" required value={email} onChange={onChangeEmail} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md" placeholder="you@example.com" />
+                    </div>
+                    {/* 닉네임 */}
+                    <div>
+                        <label htmlFor="nickname" className="block text-sm font-medium text-gray-700">닉네임 *</label>
+                        <input id="nickname" name="nickname" type="text" required value={nickname} onChange={onChangeNickname} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md" placeholder="사용할 닉네임" />
+                    </div>
+                    {/* 비밀번호 */}
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">비밀번호 * (8자 이상)</label>
+                        <input id="password" name="password" type="password" required value={password} onChange={onChangePassword} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md" placeholder="********" />
+                    </div>
+                    {/* 비밀번호 확인 */}
+                    <div>
+                        <label htmlFor="passwordConfirm" className="block text-sm font-medium text-gray-700">비밀번호 확인 *</label>
+                        <input id="passwordConfirm" name="passwordConfirm" type="password" required value={passwordConfirm} onChange={onChangePasswordConfirm} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md" placeholder="********" />
+                    </div>
+                    {/* 지갑 주소 (선택) */}
+                    <div>
+                        <label htmlFor="walletAddress" className="block text-sm font-medium text-gray-700">지갑 주소 (선택)</label>
+                        <input id="walletAddress" name="walletAddress" type="text" value={walletAddress} onChange={onChangeWalletAddress} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md" placeholder="0x..." />
+                        <p className="text-xs text-gray-500 mt-1">
+                            소셜/지갑 로그인은 첫 로그인 시 자동 처리됩니다.
+                        </p>
+                    </div>
 
-      <BasicButton type="submit" size={"full"} shape={"small"} variant={"black"} color={"white"}>회원가입</BasicButton>
+                    {/* 오류 메시지 표시 */}
+                    {error && (
+                        <p className="text-sm text-red-600 text-center mt-4">{error}</p>
+                    )}
 
-      <p className="mt-6 text-sm text-center text-gray-500">
-        Google, Kakao, Naver, MetaMask 계정이 있으신가요?
-        <Link to="/signIn" className="text-indigo-600 hover:underline font-medium ml-1">
-          로그인 페이지
-        </Link>
-        에서 간편하게 시작하세요.
-      </p>
+                    <BasicButton type="submit" className="w-full mt-6">
+                        회원가입
+                    </BasicButton>
+                </form>
 
-    </form>
-  );
+                <div className="text-sm text-center mt-4">
+                    <span className="text-gray-600">이미 계정이 있으신가요? </span>
+                    <button
+                        onClick={() => navigate('/signin')}
+                        className="font-medium text-indigo-600 hover:text-indigo-500"
+                    >
+                        로그인
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default SignUp;
