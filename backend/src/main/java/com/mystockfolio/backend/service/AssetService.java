@@ -81,15 +81,43 @@ public class AssetService {
         assetRepository.delete(asset);
     }
 
-    // 자산 이름 조회 로직 (임시)
+    // 자산 이름 조회 로직 (임시 - 실제 구현에서는 외부 API 호출 필요)
     private String findAssetNameByTicker(String ticker) {
         if (ticker == null) return "Unknown";
-        // 실제 구현에서는 외부 API 호출 또는 DB 조회 필요
-        if ("AAPL".equalsIgnoreCase(ticker)) return "Apple Inc.";
-        if ("BTC-USD".equalsIgnoreCase(ticker)) return "Bitcoin";
-        if ("TSLA".equalsIgnoreCase(ticker)) return "Tesla, Inc.";
-        if ("ETH-USD".equalsIgnoreCase(ticker)) return "Ethereum";
-        if ("005930.KS".equalsIgnoreCase(ticker)) return "Samsung Electronics";
-        return ticker.toUpperCase();
+        
+        String upperTicker = ticker.toUpperCase();
+        
+        // 주식
+        if ("AAPL".equals(upperTicker)) return "Apple Inc.";
+        if ("TSLA".equals(upperTicker)) return "Tesla, Inc.";
+        if ("GOOGL".equals(upperTicker)) return "Alphabet Inc.";
+        if ("005930.KS".equals(upperTicker)) return "Samsung Electronics";
+        
+        // 코인/토큰
+        if ("BTC".equals(upperTicker) || "BTC-USD".equals(upperTicker)) return "Bitcoin";
+        if ("ETH".equals(upperTicker) || "ETH-USD".equals(upperTicker)) return "Ethereum";
+        if ("BNB".equals(upperTicker) || "BNB-USD".equals(upperTicker)) return "Binance Coin";
+        if ("ADA".equals(upperTicker) || "ADA-USD".equals(upperTicker)) return "Cardano";
+        if ("SOL".equals(upperTicker) || "SOL-USD".equals(upperTicker)) return "Solana";
+        if ("XRP".equals(upperTicker) || "XRP-USD".equals(upperTicker)) return "Ripple";
+        if ("DOT".equals(upperTicker) || "DOT-USD".equals(upperTicker)) return "Polkadot";
+        if ("MATIC".equals(upperTicker) || "MATIC-USD".equals(upperTicker)) return "Polygon";
+        
+        // 스테이블코인
+        if ("USDT".equals(upperTicker)) return "Tether";
+        if ("USDC".equals(upperTicker)) return "USD Coin";
+        if ("DAI".equals(upperTicker)) return "Dai";
+        if ("BUSD".equals(upperTicker)) return "Binance USD";
+        
+        // 디파이 토큰
+        if ("UNI".equals(upperTicker)) return "Uniswap";
+        if ("AAVE".equals(upperTicker)) return "Aave";
+        if ("COMP".equals(upperTicker)) return "Compound";
+        if ("SUSHI".equals(upperTicker)) return "SushiSwap";
+        if ("CRV".equals(upperTicker)) return "Curve DAO Token";
+        if ("MKR".equals(upperTicker)) return "Maker";
+        
+        // 기본값: 티커를 그대로 대문자로 반환
+        return upperTicker;
     }
 }

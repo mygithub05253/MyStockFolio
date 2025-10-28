@@ -1,0 +1,6 @@
+# market-data-svc/requirements.txt
+
+fastapi
+uvicorn[standard]
+requests                  # 외부 API 호출을 위한 라이브러리
+yfinance                  # 주식 시세 데이터 예시 라이브러리 (선택적)

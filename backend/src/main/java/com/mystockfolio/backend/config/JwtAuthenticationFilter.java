@@ -17,6 +17,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+// [JWTCustomUser] 임시 사용자 ID를 UserDetails에 포함시키기 위한 커스텀 클래스 (필수)
+import org.springframework.security.core.GrantedAuthority;
 
 @Slf4j
 @Component
@@ -26,41 +30,50 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
 
+    // [중요: Spring Security UserDetails에 ID를 포함시킬 Custom 클래스 정의]
+    public static class CustomUserDetails extends org.springframework.security.core.userdetails.User {
+        private final Long userId;
+
+        public CustomUserDetails(String username, String password, Long userId, java.util.Collection<? extends GrantedAuthority> authorities) {
+            super(username, password, authorities);
+            this.userId = userId;
+        }
+
+        public Long getUserId() {
+            return userId;
+        }
+    }
+
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
 
-            // 토큰이 유효하고, 현재 Security Context에 인증 정보가 없는 경우
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+                // JWT 토큰 검증 로직
                 Long userId = tokenProvider.getUserIdFromToken(jwt);
 
-                // UserDetailsService를 통해 UserDetails 로드
                 UserDetails userDetails = customUserDetailsService.loadUserById(userId);
-                // UserDetails를 기반으로 Authentication 객체 생성
+
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()); // 비밀번호는 null 처리
+                        userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // SecurityContext에 Authentication 객체 설정
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.debug("Authenticated user: {}, setting security context", userDetails.getUsername());
-            } else {
-                if (!StringUtils.hasText(jwt)) {
-                    log.debug("No JWT token found in request headers");
-                }
-                // validateToken 내부에서 이미 로그를 남기므로 여기서는 추가 로그 생략 가능
+            } else if (StringUtils.hasText(jwt)) {
+                log.debug("Invalid or expired JWT token");
             }
         } catch (Exception ex) {
             log.error("Could not set user authentication in security context", ex);
         }
 
-        // 다음 필터 체인 실행
         filterChain.doFilter(request, response);
     }
 
-    // Request Header에서 토큰 정보 추출
+    // Request Header에서 토큰 정보 추출 (이전과 동일)
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {

@@ -18,10 +18,10 @@ public class PortfolioController {
 
     // 사용자의 모든 포트폴리오 목록 조회 (GET /api/portfolios)
     @GetMapping
-    public ResponseEntity<List<PortfolioDto.PortfolioSimpleResponse>> getUserPortfolios() {
+    public ResponseEntity<List<PortfolioDto.PortfolioResponse>> getUserPortfolios() {
         // TODO: 실제 로그인된 사용자 ID 가져오기 (Spring Security 등 사용)
         Long tempUserId = 1L; // 임시 사용자 ID
-        List<PortfolioDto.PortfolioSimpleResponse> portfolios = portfolioService.getPortfoliosByUserId(tempUserId);
+        List<PortfolioDto.PortfolioResponse> portfolios = portfolioService.getPortfoliosByUserId(tempUserId);
         return ResponseEntity.ok(portfolios);
     }
 

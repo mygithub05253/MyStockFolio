@@ -4,7 +4,10 @@ import { logout } from '../modules/user'; // logout 액션 import
 
 // 새로운 axios 인스턴스 생성
 const axiosInstance = axios.create({
-    // baseURL: 'http://localhost:8080', // 필요시 주석 해제 또는 proxy 설정 사용
+    // [★★★ 수정: 'localhost' 대신 '127.0.0.1' 명시적 사용 ★★★]
+    // Windows 환경에서 localhost 이름 해석 오류를 우회하기 위함
+    baseURL: 'http://127.0.0.1:8080', 
+    // [★★★ 수정 완료 ★★★]
     timeout: 5000,
     headers: {
         'Content-Type': 'application/json',

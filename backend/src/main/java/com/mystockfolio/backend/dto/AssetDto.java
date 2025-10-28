@@ -25,11 +25,16 @@ public class AssetDto {
         private Long portfolioId;
 
         public Asset toEntity(Portfolio portfolio) {
+            // assetType null 체크
+            if (assetType == null || assetType.trim().isEmpty()) {
+                throw new IllegalArgumentException("Asset type is required");
+            }
+            
             AssetType type;
             try {
                 type = AssetType.valueOf(assetType.toUpperCase());
-            } catch (IllegalArgumentException | NullPointerException e) {
-                throw new IllegalArgumentException("Invalid asset type: " + assetType);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid asset type: " + assetType + ". Valid values are: STOCK, COIN, STABLECOIN, DEFI, NFT, OTHER");
             }
 
             return Asset.builder()

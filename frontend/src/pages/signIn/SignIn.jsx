@@ -31,7 +31,7 @@ const SignIn = () => {
         }
 
         try {
-            // [기존 기능 유지] 백엔드 로그인 API 호출
+            // 백엔드 로그인 API 호출
             const response = await axiosInstance.post('/api/auth/login', {
                 email: email,
                 password: password
@@ -55,22 +55,13 @@ const SignIn = () => {
             setError(errorMessage); 
         }
     };
-    
-    // [★★★ 개발자 모드 로그인 핸들러 (유지) ★★★]
-    const handleDevLogin = () => {
-        // 백엔드 연동 없이 임시 토큰/상태 설정
-        localStorage.setItem('accessToken', 'DEV_TOKEN_12345'); 
-        dispatch(loginSuccess({ userId: 999, email: 'dev@folio.com', nickname: 'DEV_USER' }));
-        alert('개발자 모드로 로그인되었습니다. 기능 확인 후 요청 시 이 버튼은 제거됩니다.');
-        navigate('/dashboard');
-    };
 
-    // 소셜 로그인 버튼 클릭 핸들러 (이전과 동일)
+    // 소셜 로그인 버튼 클릭 핸들러
     const handleSocialLogin = (provider) => {
         alert(`${provider} 로그인은 현재 지원되지 않습니다.`);
     };
 
-    // 지갑 로그인 버튼 클릭 핸들러 (이전과 동일)
+    // 지갑 로그인 버튼 클릭 핸들러
     const handleWalletLogin = () => {
         alert('MetaMask 로그인은 현재 지원되지 않습니다.');
     };
@@ -126,16 +117,10 @@ const SignIn = () => {
                         <p className="text-sm text-red-600 text-center">{error}</p>
                     )}
 
-
                     <BasicButton type="submit" className="w-full">
                         로그인
                     </BasicButton>
                 </form>
-                
-                {/* [★★★ 개발자 모드 로그인 버튼 ★★★] */}
-                <BasicButton onClick={handleDevLogin} className="w-full bg-yellow-500 hover:bg-yellow-600 text-white text-sm">
-                    개발자 모드 (FE 테스트용)
-                </BasicButton>
 
                 <div className="relative my-4">
                     <div className="absolute inset-0 flex items-center">
@@ -168,7 +153,7 @@ const SignIn = () => {
                     </button>
                 </div>
 
-                {/* 회원가입 링크 (로그인 화면 하단에 유지) */}
+                {/* 회원가입 링크 */}
                 <div className="text-sm text-center">
                     <span className="text-gray-600">계정이 없으신가요? </span>
                     <button
