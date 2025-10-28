@@ -37,13 +37,14 @@ const SignUp = () => {
       // alert('회원가입 기능 구현 예정입니다.'); // 👈 임시 알림 제거
     } catch (error) {
       console.error("회원가입 요청 중 오류 발생:", error);
-      alert("회원가입 중 오류가 발생했습니다. 네트워크 연결을 확인하거나 잠시 후 다시 시도해주세요.");
+      // 🚧 개발 모드 안내
+      alert("백엔드 서버가 실행되지 않았습니다.\n개발 모드를 사용하려면:\n1. 메인 페이지에서 '🚧 개발자 모드 로그인' 버튼 클릭\n2. 또는 로그인 페이지에서 이메일: dev@test.com / 비밀번호: dev123 입력");
     }
   };
 
 
   return (
-    <form className="w-full h-full" onSubmit={handleSubmit(onSubmit)}>
+    <form className="w-full py-8" onSubmit={handleSubmit(onSubmit)}>
 
       <label className="block w-full mb-8">
         <p className="text-base font-semibold text-gray-800 mb-3">이메일</p>

@@ -1,15 +1,14 @@
 import { createBrowserRouter } from "react-router-dom";
 import Layout from "../pages/layout/Layout";
 import Main from "../pages/main/Main";
-import PageNotFound from "../pages/error/PageNotFound";
-import PortfolioContainer from "../pages/portfolio/PortfolioContainer";
-import SignIn from "../pages/signIn/SignIn";
-import SignUp from "../pages/signUp/SignUp";
-import MyPage from "../pages/myPage/MyPage";
-import AdminLayout from "../pages/layout/AdminLayout";
-import Dashboard from "../pages/dashboard/Dashboard";
-import Market from "../pages/market/Market";
-import Rewards from "../pages/rewards/Rewards";
+import PageNotFound from '../pages/error/PageNotFound.jsx';
+import PortfolioContainer from "../pages/portfolio/PortfolioContainer.jsx";
+import SignIn from "../pages/signIn/SignIn.jsx";
+import SignUp from "../pages/signUp/SignUp.jsx";
+import MyPage from "../pages/myPage/MyPage.jsx";
+import Dashboard from "../pages/dashboard/Dashboard.jsx";
+import Market from "../pages/market/Market.jsx";
+import Rewards from "../pages/rewards/Rewards.jsx";
 
 const router = createBrowserRouter([
   {

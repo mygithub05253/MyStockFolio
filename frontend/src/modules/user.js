@@ -1,26 +1,46 @@
-import { createAction, handleActions } from "redux-actions";
+// 액션 타입 정의
+const LOGIN_SUCCESS = 'user/LOGIN_SUCCESS';
+const LOGOUT = 'user/LOGOUT';
+// const SET_USER_INFO = 'user/SET_USER_INFO'; // 필요시 사용자 정보 업데이트 액션 추가
 
-// 유저에 대한 타입을 생성
-const SET_PREVIOUS_URL = "user/SET_PREVIOUS_URL";
-const SET_USER = "user/SET_USER";
-const SET_USER_STATUS = "user/SET_USER_STATUS";
+// 액션 생성 함수
+export const loginSuccess = (userData) => ({
+    type: LOGIN_SUCCESS,
+    payload: userData // 예: { userId, email, nickname }
+});
 
-// 유저 관련 액션을 생성
-export const setPreviousUrl = createAction(SET_PREVIOUS_URL, (previousUrl) => previousUrl);
-export const setUser = createAction(SET_USER, (currentUser) => currentUser);
-export const setUserStatus = createAction(SET_USER_STATUS, (isLogin) => isLogin);
+export const logout = () => ({
+    type: LOGOUT
+});
 
-const intitialValue = {
-  currentUser : {},
-  isLogin : false,
-  previousUrl : ""
+// export const setUserInfo = (userInfo) => ({ type: SET_USER_INFO, payload: userInfo });
+
+// 초기 상태
+const initialState = {
+    isLoggedIn: false, // 로그인 상태
+    userInfo: null,   // 사용자 정보 (예: { userId, email, nickname })
 };
 
-// reducer 부분
-const user = handleActions({
-  [SET_PREVIOUS_URL] : (state = intitialValue, action) => ({...state, previousUrl : action.payload}),
-  [SET_USER] : (state = intitialValue, action) => ({...state, currentUser : action.payload}),
-  [SET_USER_STATUS] : (state = intitialValue, action) => ({...state, isLogin : action.payload}),
-}, intitialValue);
+// 리듀서
+function user(state = initialState, action) {
+    switch (action.type) {
+        case LOGIN_SUCCESS:
+            return {
+                ...state,
+                isLoggedIn: true,
+                userInfo: action.payload // 로그인 시 받은 사용자 정보 저장
+            };
+        case LOGOUT:
+            return {
+                ...state,
+                isLoggedIn: false,
+                userInfo: null // 로그아웃 시 사용자 정보 초기화
+            };
+        // case SET_USER_INFO:
+        //     return { ...state, userInfo: { ...state.userInfo, ...action.payload } };
+        default:
+            return state;
+    }
+}
 
 export default user;
