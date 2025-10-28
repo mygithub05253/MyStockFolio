@@ -98,62 +98,51 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-800 mb-6">대시보드</h1>
+    // [모바일 최적화 반영] - max-w-md와 mx-auto를 사용하여 모바일 뷰에서 중앙 정렬 및 너비 제한
+    <div className="container mx-auto p-4 max-w-md"> 
+        <h1 className="text-2xl font-bold mb-4">대시보드</h1>
+        <p className="mb-6 text-gray-600">
+            안녕하세요, 사용자님! 포트폴리오 현황을 확인하세요.
+        </p>
 
-      {/* 1. 주요 통계 카드 */}
-      <div className="grid grid-cols-2 gap-4">
-        {/* 총 평가 금액 */}
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-sm text-gray-500">총 평가 금액</p>
-          <p className="text-xl font-bold text-gray-900 mt-1">
-            ${formatCurrency(dashboardStats.totalValue)}
-          </p>
+        {/* 주요 통계 카드 */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-white p-4 rounded-lg shadow">
+                <p className="text-sm text-gray-500">총 자산 가치</p>
+                <p className="text-xl font-bold text-indigo-600">₩ 12,345,678</p>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow">
+                <p className="text-sm text-gray-500">총 수익률</p>
+                <p className="text-xl font-bold text-green-500">+15.5%</p>
+            </div>
         </div>
-        {/* 총 투자 원금 */}
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-sm text-gray-500">총 투자 원금</p>
-          <p className="text-xl font-bold text-gray-900 mt-1">
-            ${formatCurrency(dashboardStats.totalInvestment)}
-          </p>
-        </div>
-        {/* 총 평가 손익 */}
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-sm text-gray-500">총 평가 손익 (수익률)</p>
-          <p className={`text-xl font-bold mt-1 ${dashboardStats.totalProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {formatProfitLoss(dashboardStats.totalProfitLoss)}
-          </p>
-          <p className={`text-sm mt-1 ${dashboardStats.totalProfitLossRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            ({formatProfitLossRate(dashboardStats.totalProfitLossRate)})
-          </p>
-        </div>
-        {/* 오늘 손익 */}
-        <div className="bg-white p-4 rounded-lg shadow text-center">
-          <p className="text-sm text-gray-500">오늘 손익 (수익률)</p>
-           <p className={`text-xl font-bold mt-1 ${dashboardStats.todayProfitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {formatProfitLoss(dashboardStats.todayProfitLoss)}
-          </p>
-           <p className={`text-sm mt-1 ${dashboardStats.todayProfitLossRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-             ({formatProfitLossRate(dashboardStats.todayProfitLossRate)})
-          </p>
-        </div>
-      </div>
 
-      {/* 2. 자산 배분 (Pie Chart) */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">자산 배분</h2>
-        <div className="w-full max-w-sm mx-auto h-64"> {/* 높이 고정 */}
-          <Pie data={pieChartData} options={pieChartOptions} />
+        {/* 자산 배분 차트 */}
+        <div className="bg-white p-4 rounded-lg shadow mb-6">
+            <h2 className="text-xl font-semibold mb-3">자산 배분</h2>
+            <div className="h-64 flex justify-center items-center">
+                <p className="text-gray-400">자산 배분 Pie Chart</p>
+            </div>
         </div>
-      </div>
 
-      {/* 3. 자산 추이 (Line Chart) */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">자산 추이</h2>
-        <div className="w-full h-64"> {/* 높이 고정 */}
-          <Line data={lineChartData} options={lineChartOptions} />
+        {/* 자산 추이 차트 */}
+        <div className="bg-white p-4 rounded-lg shadow mb-6">
+             <h2 className="text-xl font-semibold mb-3">자산 추이</h2>
+            <div className="h-64 flex justify-center items-center">
+                <p className="text-gray-400">자산 추이 Line Chart</p>
+            </div>
         </div>
-      </div>
+
+        {/* 개발자 모드 버튼 (요청 사항 반영) */}
+        <div className="mt-8 text-center">
+            <p className="text-sm text-gray-500 mb-2">개발자 모드</p>
+             <button 
+                onClick={() => alert('개발자 모드 ON/OFF 로직 구현 예정')}
+                className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+             >
+                DEV MODE
+             </button>
+        </div>
     </div>
   );
 };

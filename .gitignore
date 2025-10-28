@@ -17,3 +17,6 @@ backend-blockchain/.env
 .idea/
 *.iml
 .vscode/
+
+# AI 설정 파일 제외
+.cursor/
