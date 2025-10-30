@@ -1,0 +1,25 @@
+# 각 프로젝트 폴더의 node_modules 무시
+frontend/node_modules
+backend-blockchain/node_modules
+
+# Spring Boot 빌드 결과 무시
+backend-main/build
+backend-main/out
+
+# Python 가상환경 무시
+backend-marketdata/__pycache__
+backend-marketdata/venv
+
+# 환경 변수 파일 무시 (보안)
+backend-blockchain/.env
+backend/.env
+backend/src/main/resources/.env
+*.env
+
+# IDE 설정 파일 등
+.idea/
+*.iml
+.vscode/
+
+# AI 설정 파일 제외
+.cursor/
