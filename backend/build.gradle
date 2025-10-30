@@ -33,6 +33,8 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	// WebClient (WebFlux)를 사용하여 비동기 HTTP 통신 클라이언트 구현
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	// Web3j for MetaMask authentication
+	implementation 'org.web3j:core:4.9.8'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 	compileOnly 'org.projectlombok:lombok'

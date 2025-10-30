@@ -61,14 +61,57 @@ public class AuthService {
         }
 
         // JWT 토큰 생성
-        String accessToken = jwtTokenProvider.generateToken(user.getId());
+        String accessToken = jwtTokenProvider.generateToken(user.getEmail());
 
         // 로그인 성공 응답 생성
         return AuthDto.AuthResponse.builder()
-                .userId(user.getId())
+                .userId(user.getUserId())
                 .email(user.getEmail())
                 .nickname(user.getNickname())
                 .accessToken(accessToken) // 생성된 JWT 토큰 전달
+                .build();
+    }
+
+    // OAuth2 추가 정보 입력 완료
+    @Transactional
+    public AuthDto.AuthResponse completeOAuth2SignUp(AuthDto.OAuth2CompleteRequest requestDto) {
+        // 이메일로 사용자 조회
+        User user = userRepository.findByEmail(requestDto.getEmail())
+                .orElseThrow(() -> new InvalidCredentialsException("사용자를 찾을 수 없습니다."));
+
+        // 닉네임 업데이트
+        user.setNickname(requestDto.getNickname());
+        userRepository.save(user);
+
+        // JWT 토큰 생성
+        String accessToken = jwtTokenProvider.generateToken(user.getEmail());
+
+        // 응답 생성
+        return AuthDto.AuthResponse.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .accessToken(accessToken)
+                .build();
+    }
+
+    // 현재 로그인한 사용자 정보 조회
+    @Transactional(readOnly = true)
+    public AuthDto.UserInfoResponse getCurrentUser(String authHeader) {
+        // Bearer 토큰에서 실제 토큰 추출
+        String token = authHeader.replace("Bearer ", "");
+        
+        // 토큰에서 이메일 추출
+        String email = jwtTokenProvider.getEmailFromToken(token);
+        
+        // 사용자 조회
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new InvalidCredentialsException("사용자를 찾을 수 없습니다."));
+
+        return AuthDto.UserInfoResponse.builder()
+                .userId(user.getUserId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
                 .build();
     }
 }

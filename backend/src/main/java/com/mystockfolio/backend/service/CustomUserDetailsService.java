@@ -29,7 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new JwtAuthenticationFilter.CustomUserDetails(
                 user.getEmail(),
                 user.getPassword(),
-                user.getId(),
+                user.getUserId(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
         );
     }
@@ -45,7 +45,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new JwtAuthenticationFilter.CustomUserDetails(
                 user.getEmail(),
                 user.getPassword(),
-                user.getId(),
+                user.getUserId(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
         );
     }

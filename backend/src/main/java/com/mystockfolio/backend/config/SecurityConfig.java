@@ -1,5 +1,7 @@
 package com.mystockfolio.backend.config;
 
+import com.mystockfolio.backend.config.oauth2.CustomOAuth2UserService;
+import com.mystockfolio.backend.config.oauth2.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +27,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -40,14 +44,22 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        // ★★★ 인증 없이 접근 허용할 경로들을 가장 먼저 명시 ★★★
+                        // ★★★ 인증 없이 접근 허용할 경로들 ★★★
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/oauth2/complete").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/metamask/**").permitAll()
                         .requestMatchers("/api/hello").permitAll()
-                        // TODO: OAuth2 경로 추가
-                        // .requestMatchers("/oauth2/**", "/login/oauth2/code/**").permitAll()
+                        // OAuth2 경로 허용
+                        .requestMatchers("/oauth2/**", "/login/oauth2/code/**").permitAll()
 
-                        // ★★★ 나머지 모든 요청은 인증 필요 (가장 마지막에 위치) ★★★
+                        // ★★★ 나머지 모든 요청은 인증 필요 ★★★
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(oAuth2SuccessHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -9,9 +9,10 @@ import java.util.List;
 public interface PortfolioRepository extends JpaRepository<Portfolio, Long> {
     
     // 사용자 ID로 해당 사용자의 모든 포트폴리오 목록 조회
-    List<Portfolio> findByUserId(Long userId);
+    @Query("SELECT p FROM Portfolio p WHERE p.user.userId = :userId")
+    List<Portfolio> findByUserId(@Param("userId") Long userId);
     
     // 사용자 ID로 해당 사용자의 모든 포트폴리오 목록 조회 (자산 포함 - JOIN FETCH)
-    @Query("SELECT DISTINCT p FROM Portfolio p LEFT JOIN FETCH p.assets WHERE p.user.id = :userId")
+    @Query("SELECT DISTINCT p FROM Portfolio p LEFT JOIN FETCH p.assets WHERE p.user.userId = :userId")
     List<Portfolio> findByUserIdWithAssets(@Param("userId") Long userId);
 }

@@ -40,7 +40,7 @@ const SignIn = () => {
             const { accessToken, userId, email: userEmail, nickname } = response.data;
 
             if (accessToken) {
-                localStorage.setItem('accessToken', accessToken);
+                sessionStorage.setItem('accessToken', accessToken);
                 dispatch(loginSuccess({ userId, email: userEmail, nickname }));
 
                 alert(`${nickname || '사용자'}님, 환영합니다!`);
@@ -58,12 +58,69 @@ const SignIn = () => {
 
     // 소셜 로그인 버튼 클릭 핸들러
     const handleSocialLogin = (provider) => {
-        alert(`${provider} 로그인은 현재 지원되지 않습니다.`);
+        // 백엔드 OAuth2 엔드포인트로 리다이렉트
+        const backendUrl = 'http://localhost:8080';
+        window.location.href = `${backendUrl}/oauth2/authorization/${provider}`;
     };
 
     // 지갑 로그인 버튼 클릭 핸들러
-    const handleWalletLogin = () => {
-        alert('MetaMask 로그인은 현재 지원되지 않습니다.');
+    const handleWalletLogin = async () => {
+        try {
+            // MetaMask 설치 확인
+            if (typeof window.ethereum === 'undefined') {
+                alert('MetaMask가 설치되어 있지 않습니다. MetaMask를 설치해주세요.');
+                window.open('https://metamask.io/download/', '_blank');
+                return;
+            }
+
+            // 계정 연결 요청
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const walletAddress = accounts[0];
+
+            if (!walletAddress) {
+                alert('지갑 주소를 가져올 수 없습니다.');
+                return;
+            }
+
+            // 1. Nonce 요청
+            const nonceResponse = await axiosInstance.post('/api/auth/metamask/nonce', {
+                walletAddress: walletAddress
+            });
+
+            const { nonce, message } = nonceResponse.data;
+
+            // 2. 사용자에게 서명 요청
+            const signature = await window.ethereum.request({
+                method: 'personal_sign',
+                params: [message, walletAddress]
+            });
+
+            // 3. 서명 검증 및 로그인
+            const verifyResponse = await axiosInstance.post('/api/auth/metamask/verify', {
+                walletAddress: walletAddress,
+                signature: signature,
+                nickname: null // 신규 사용자는 별도 입력 받을 수 있음
+            });
+
+            const { accessToken, userId, email: userEmail, nickname, isNewUser } = verifyResponse.data;
+
+            // 토큰 저장 및 Redux 업데이트
+            sessionStorage.setItem('accessToken', accessToken);
+            dispatch(loginSuccess({ userId, email: userEmail, nickname }));
+
+            if (isNewUser) {
+                alert(`${nickname}님, 환영합니다! 새로운 계정이 생성되었습니다.`);
+            } else {
+                alert(`${nickname}님, 다시 오신 것을 환영합니다!`);
+            }
+
+            navigate('/dashboard');
+
+        } catch (err) {
+            console.error('MetaMask 로그인 실패:', err);
+            const errorMessage = err.response?.data?.message || 'MetaMask 로그인 중 오류가 발생했습니다.';
+            alert(errorMessage);
+        }
     };
 
     return (
