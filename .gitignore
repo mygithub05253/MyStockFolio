@@ -12,6 +12,9 @@ backend-marketdata/venv
 
 # 환경 변수 파일 무시 (보안)
 backend-blockchain/.env
+backend/.env
+backend/src/main/resources/.env
+*.env
 
 # IDE 설정 파일 등
 .idea/
