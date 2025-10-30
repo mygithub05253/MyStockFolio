@@ -42,6 +42,18 @@ public class AuthDto {
         private String password;
     }
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OAuth2CompleteRequest {
+        @NotBlank(message = "이메일은 필수 입력값입니다.")
+        @Email(message = "이메일 형식이 올바르지 않습니다.")
+        private String email;
+
+        @NotBlank(message = "닉네임은 필수 입력값입니다.")
+        private String nickname;
+    }
+
     // --- 응답(Response) DTO ---
 
     @Getter
@@ -64,5 +76,16 @@ public class AuthDto {
     @Builder
     public static class MessageResponse {
         private String message;
+    }
+
+    // 현재 로그인한 사용자 정보 응답
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class UserInfoResponse {
+        private Long userId;
+        private String email;
+        private String nickname;
     }
 }

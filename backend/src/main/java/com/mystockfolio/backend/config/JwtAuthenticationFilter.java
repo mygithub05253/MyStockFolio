@@ -52,10 +52,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                // JWT 토큰 검증 로직
-                Long userId = tokenProvider.getUserIdFromToken(jwt);
+                // JWT 토큰 검증 로직 (이메일 기반)
+                String email = tokenProvider.getEmailFromToken(jwt);
 
-                UserDetails userDetails = customUserDetailsService.loadUserById(userId);
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());

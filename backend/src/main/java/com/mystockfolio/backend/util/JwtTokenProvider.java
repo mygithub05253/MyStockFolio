@@ -34,28 +34,35 @@ public class JwtTokenProvider {
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    // 사용자 ID를 기반으로 JWT 토큰 생성
-    public String generateToken(Long userId) {
+    // 이메일을 기반으로 JWT 토큰 생성
+    public String generateToken(String email) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
 
         return Jwts.builder()
-                .subject(Long.toString(userId)) // 토큰 제목 (사용자 ID 저장)
+                .subject(email) // 토큰 제목 (이메일 저장)
                 .issuedAt(now) // 발급 시간
                 .expiration(expiryDate) // 만료 시간
                 .signWith(key) // 서명 키
                 .compact();
     }
 
-    // JWT 토큰에서 사용자 ID 추출
-    public Long getUserIdFromToken(String token) {
+    // JWT 토큰에서 이메일 추출
+    public String getEmailFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
-        return Long.parseLong(claims.getSubject());
+        return claims.getSubject();
+    }
+
+    // 하위 호환성을 위한 메서드 (userId 기반)
+    @Deprecated
+    public Long getUserIdFromToken(String token) {
+        // 이메일을 반환하므로 이 메서드는 더 이상 사용하지 않음
+        throw new UnsupportedOperationException("Use getEmailFromToken instead");
     }
 
     // JWT 토큰 유효성 검증

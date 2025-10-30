@@ -10,6 +10,8 @@ import Dashboard from "../pages/dashboard/Dashboard.jsx";
 import MyPage from "../pages/myPage/MyPage.jsx";
 import Market from "../pages/market/Market.jsx";
 import Rewards from "../pages/rewards/Rewards.jsx";
+import OAuth2Callback from "../pages/auth/OAuth2Callback.jsx";
+import OAuth2SignUp from "../pages/auth/OAuth2SignUp.jsx";
 
 const router = createBrowserRouter([
     // 기본 사용자 레이아웃
@@ -35,6 +37,15 @@ const router = createBrowserRouter([
     {
         path: '/signup',
         element: <SignUp />,
+    },
+    // OAuth2 콜백 경로
+    {
+        path: '/oauth2/callback',
+        element: <OAuth2Callback />,
+    },
+    {
+        path: '/oauth2/signup',
+        element: <OAuth2SignUp />,
     },
     // 관리자 레이아웃 (예시)
     {

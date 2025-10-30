@@ -10,4 +10,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 이메일 존재 여부 확인 (회원가입 시 중복 체크)
     boolean existsByEmail(String email);
+
+    // 지갑 주소로 사용자 조회 (MetaMask 인증 시 사용)
+    Optional<User> findByWalletAddress(String walletAddress);
 }

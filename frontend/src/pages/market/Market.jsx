@@ -1,145 +1,327 @@
 import React, { useState, useEffect } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faChartLine, faCoins } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
+import axiosInstance from '../../api/axiosInstance';
 
-const mockMarketData = [
-  { id: 'AAPL', type: 'stock', name: 'Apple Inc.', price: 175.25, changePercent: 0.86 },
-  { id: 'TSLA', type: 'stock', name: 'Tesla, Inc.', price: 250.80, changePercent: -0.83 },
-  { id: 'BTC-USD', type: 'coin', name: 'Bitcoin', price: 42500.00, changePercent: 1.19 },
-  { id: 'ETH-USD', type: 'coin', name: 'Ethereum', price: 2300.50, changePercent: -0.65 },
-  { id: '005930.KS', type: 'stock', name: 'Samsung Electronics', price: 72000.00, changePercent: 0.14 },
+// 인기 종목 리스트 (검색 자동완성용)
+const popularTickers = [
+  { ticker: 'AAPL', name: 'Apple Inc.', type: 'stock' },
+  { ticker: 'TSLA', name: 'Tesla Inc.', type: 'stock' },
+  { ticker: 'GOOGL', name: 'Alphabet Inc.', type: 'stock' },
+  { ticker: 'MSFT', name: 'Microsoft Corporation', type: 'stock' },
+  { ticker: 'AMZN', name: 'Amazon.com Inc.', type: 'stock' },
+  { ticker: 'BTC-USD', name: 'Bitcoin', type: 'coin' },
+  { ticker: 'ETH-USD', name: 'Ethereum', type: 'coin' },
+  { ticker: '005930.KS', name: 'Samsung Electronics', type: 'stock' },
+  { ticker: '000660.KS', name: 'SK Hynix', type: 'stock' },
+  { ticker: '035420.KS', name: 'NAVER', type: 'stock' },
 ];
 
-const fetchMarketData = async (type = 'all', search = '') => {
-  // TODO: FastAPI 백엔드 구현 후 실제 API 엔드포인트로 변경
-  // const apiUrl = `/api/market/list?type=${type}&search=${search}`;
-  console.log(`API 호출 시도: type=${type}, search=${search}`);
-
-  try {
-    // 임시: 0.5초 딜레이 후 목 데이터 반환 (실제 호출 시 아래 주석 해제)
-    // const response = await axios.get(apiUrl);
-    // return response.data; // 실제 API 응답 데이터 반환
-
-    return new Promise(resolve => {
-      setTimeout(() => {
-        const filteredData = mockMarketData.filter(item =>
-          (type === 'all' || item.type === type) &&
-          (search === '' ||
-           item.name.toLowerCase().includes(search.toLowerCase()) ||
-           item.id.toLowerCase().includes(search.toLowerCase()))
-        );
-        resolve(filteredData); // 필터링된 목 데이터 반환
-      }, 500);
-    });
-
-  } catch (error) {
-    console.error("시장 데이터 API 호출 실패:", error);
-    // API 호출 실패 시 빈 배열 또는 목 데이터 반환 (선택)
-    return [];
-  }
-};
-
-// 숫자 포맷 함수 (대시보드와 유사)
+// 숫자 포맷 함수
   const formatCurrency = (value, fractionDigits = 2) => {
-    // 한국 주식 등 소수점 없는 경우 고려 (임시)
-    const options = tickerSupportsFraction(value)
-      ? { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits }
-      : { minimumFractionDigits: 0, maximumFractionDigits: 0 };
+  if (value === null || value === undefined) return '-';
+  const options = {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits
+  };
     return value.toLocaleString(undefined, options);
   };
+
   const formatPercentChange = (value) => {
+  if (value === null || value === undefined) return '-';
     return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
   };
-  const tickerSupportsFraction = (ticker) => !ticker.includes('.KS');
-const getCurrency = (ticker) => (ticker.includes('.KS') ? 'KRW' : 'USD');
-const getFractionDigits = (ticker) => (ticker.includes('.KS') ? 0 : 2);
+
+const formatVolume = (value) => {
+  if (value === null || value === undefined) return '-';
+  if (value >= 1000000000) return `${(value / 1000000000).toFixed(2)}B`;
+  if (value >= 1000000) return `${(value / 1000000).toFixed(2)}M`;
+  if (value >= 1000) return `${(value / 1000).toFixed(2)}K`;
+  return value.toLocaleString();
+};
+
+const getFractionDigits = (ticker) => {
+  if (!ticker) return 2;
+  return ticker.includes('.KS') || ticker.includes('.KQ') ? 0 : 2;
+};
 
 const Market = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTicker, setSelectedTicker] = useState('AAPL'); // 기본 선택 종목
+  const [detailedQuote, setDetailedQuote] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'stock', 'coin'
-  const [marketData, setMarketData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
 
-  useEffect(() => {
-    // useEffect에서 API 호출 함수 사용
-    const loadData = async () => {
+  // 상세 시세 정보 조회
+  const fetchDetailedQuote = async (ticker) => {
       setIsLoading(true);
-      const data = await fetchMarketData(activeTab, searchTerm);
-      setMarketData(data);
+    setError('');
+    try {
+      const response = await axiosInstance.get(`http://localhost:8001/api/market/quote?ticker=${ticker}`);
+      setDetailedQuote(response.data);
+      console.log('상세 시세 조회 성공:', response.data);
+    } catch (err) {
+      console.error('상세 시세 조회 실패:', err);
+      setError(`'${ticker}' 시세 조회 실패: ${err.response?.data?.detail || err.message}`);
+      setDetailedQuote(null);
+    } finally {
       setIsLoading(false);
+    }
     };
 
-    loadData();
-  }, [activeTab, searchTerm]);
+  // 차트 데이터 조회
+  const fetchChartData = async (ticker) => {
+    try {
+      const response = await axiosInstance.get(`http://localhost:8001/api/market/chart?ticker=${ticker}&period=1mo`);
+      setChartData(response.data.history || []);
+      console.log('차트 데이터 조회 성공:', response.data);
+    } catch (err) {
+      console.error('차트 데이터 조회 실패:', err);
+      setChartData([]);
+    }
+  };
+
+  // 종목 선택 시
+  const handleSelectTicker = (ticker) => {
+    setSelectedTicker(ticker);
+    fetchDetailedQuote(ticker);
+    fetchChartData(ticker);
+  };
+
+  // 검색 실행
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      setError('종목 코드를 입력해주세요.');
+      return;
+    }
+    handleSelectTicker(searchTerm.toUpperCase());
+  };
+
+  // 초기 로드 (기본 종목)
+  useEffect(() => {
+    fetchDetailedQuote(selectedTicker);
+    fetchChartData(selectedTicker);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 필터링된 인기 종목
+  const filteredTickers = popularTickers.filter(item => {
+    if (activeTab === 'stock') return item.type === 'stock';
+    if (activeTab === 'coin') return item.type === 'coin';
+    return true;
+  });
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-semibold text-gray-800 mb-6">시장 탐색</h1>
-
-      {/* 1. 검색 바 */}
-      <div className="mb-6 relative">
-        <input
-          type="text"
-          placeholder="자산 검색 (예: Apple, BTC)"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-        <FontAwesomeIcon icon={faSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
+      {/* 헤더 */}
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">시장 탐색</h1>
       </div>
 
-      {/* 2. 자산 유형 탭 */}
-      <div className="mb-6 flex space-x-1 border-b">
+      {/* 검색 바 */}
+      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3">
+        <input
+          type="text"
+            placeholder="종목 코드 입력 (예: AAPL, BTC-USD, 005930.KS)"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+          <button
+            onClick={handleSearch}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+          >
+            검색
+          </button>
+        </div>
+      </div>
+
+      {/* 에러 메시지 */}
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* HTS 스타일 레이아웃 - 반응형 그리드 */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+        
+        {/* 왼쪽: 인기 종목 리스트 (모바일에서는 상단) */}
+        <div className="lg:col-span-3 bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="p-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">인기 종목</h3>
+            <div className="flex gap-2">
         <button
           onClick={() => setActiveTab('all')}
-          className={`py-2 px-4 text-sm font-medium ${activeTab === 'all' ? 'border-b-2 border-indigo-500 text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'all'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
         >
           전체
         </button>
         <button
           onClick={() => setActiveTab('stock')}
-          className={`py-2 px-4 text-sm font-medium ${activeTab === 'stock' ? 'border-b-2 border-indigo-500 text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'stock'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
         >
-          <FontAwesomeIcon icon={faChartLine} className="mr-1" /> 주식
+                주식
         </button>
         <button
           onClick={() => setActiveTab('coin')}
-          className={`py-2 px-4 text-sm font-medium ${activeTab === 'coin' ? 'border-b-2 border-indigo-500 text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'coin'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
         >
-          <FontAwesomeIcon icon={faCoins} className="mr-1" /> 코인
+                코인
         </button>
+            </div>
+          </div>
+          <ul className="divide-y divide-gray-200 max-h-96 lg:max-h-[600px] overflow-y-auto">
+            {filteredTickers.map((item) => (
+              <li
+                key={item.ticker}
+                onClick={() => handleSelectTicker(item.ticker)}
+                className={`p-4 cursor-pointer transition-colors ${
+                  selectedTicker === item.ticker
+                    ? 'bg-indigo-50 border-l-4 border-indigo-600'
+                    : 'hover:bg-gray-50'
+                }`}
+              >
+                <div className="font-semibold text-gray-800 text-sm">{item.ticker}</div>
+                <div className="text-xs text-gray-600 mt-1">{item.name}</div>
+              </li>
+            ))}
+          </ul>
       </div>
 
-      {/* 3. 자산 목록 테이블 */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            {/* ... thead ... */}
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+        {/* 중앙: 상세 시세 정보 */}
+        <div className="lg:col-span-6 bg-white rounded-lg shadow-md p-4 md:p-6">
             {isLoading ? (
-              <tr><td colSpan="3" className="text-center py-4 text-gray-500">데이터 로딩 중...</td></tr>
-            ) : marketData.length > 0 ? (
-              marketData.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => alert(`${item.name} 클릭됨 - 상세 보기 구현 예정`)}>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                    <div className="text-xs text-gray-500">{item.id}</div>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                    {formatCurrency(item.price, getFractionDigits(item.id), getCurrency(item.id))}
-                  </td>
-                  <td className={`px-4 py-3 whitespace-nowrap text-right text-sm font-medium ${item.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatPercentChange(item.changePercent)}
-                  </td>
+            <div className="flex items-center justify-center h-64">
+              <div className="text-gray-500 text-lg">로딩 중...</div>
+            </div>
+          ) : detailedQuote ? (
+            <>
+              {/* 종목 헤더 */}
+              <div className="flex flex-wrap items-center gap-3 mb-6 pb-4 border-b-2 border-gray-200">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-800">{detailedQuote.name}</h2>
+                <span className="px-3 py-1 bg-gray-100 rounded-md text-sm font-semibold text-gray-700">
+                  {detailedQuote.ticker}
+                </span>
+              </div>
+
+              {/* 현재가 */}
+              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg p-6 mb-6 text-white">
+                <div className="text-3xl md:text-4xl font-bold mb-2">
+                  {formatCurrency(detailedQuote.current_price, getFractionDigits(detailedQuote.ticker))}
+                  <span className="text-lg md:text-xl ml-2 opacity-90">{detailedQuote.currency}</span>
+                </div>
+                <div className={`text-lg md:text-xl font-semibold ${
+                  detailedQuote.change >= 0 ? 'text-green-300' : 'text-red-300'
+                }`}>
+                  {detailedQuote.change >= 0 ? '▲' : '▼'} {formatCurrency(Math.abs(detailedQuote.change), getFractionDigits(detailedQuote.ticker))} ({formatPercentChange(detailedQuote.change_percent)})
+                </div>
+              </div>
+
+              {/* 시세 정보 테이블 */}
+              <div className="mb-6 overflow-x-auto">
+                <table className="w-full">
+                  <tbody className="divide-y divide-gray-200">
+                    <tr>
+                      <td className="py-3 px-2 md:px-4 text-sm font-semibold text-gray-600">시가</td>
+                      <td className="py-3 px-2 md:px-4 text-sm text-gray-800">{formatCurrency(detailedQuote.open_price, getFractionDigits(detailedQuote.ticker))}</td>
+                      <td className="py-3 px-2 md:px-4 text-sm font-semibold text-gray-600">고가</td>
+                      <td className="py-3 px-2 md:px-4 text-sm text-red-600 font-semibold">{formatCurrency(detailedQuote.high_price, getFractionDigits(detailedQuote.ticker))}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-2 md:px-4 text-sm font-semibold text-gray-600">저가</td>
+                      <td className="py-3 px-2 md:px-4 text-sm text-blue-600 font-semibold">{formatCurrency(detailedQuote.low_price, getFractionDigits(detailedQuote.ticker))}</td>
+                      <td className="py-3 px-2 md:px-4 text-sm font-semibold text-gray-600">전일 종가</td>
+                      <td className="py-3 px-2 md:px-4 text-sm text-gray-800">{formatCurrency(detailedQuote.previous_close, getFractionDigits(detailedQuote.ticker))}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-2 md:px-4 text-sm font-semibold text-gray-600">거래량</td>
+                      <td className="py-3 px-2 md:px-4 text-sm text-gray-800">{formatVolume(detailedQuote.volume)}</td>
+                      <td className="py-3 px-2 md:px-4 text-sm font-semibold text-gray-600">시가총액</td>
+                      <td className="py-3 px-2 md:px-4 text-sm text-gray-800">{detailedQuote.market_cap ? formatVolume(detailedQuote.market_cap) : '-'}</td>
+                    </tr>
+                    {detailedQuote.pe_ratio && (
+                      <tr>
+                        <td className="py-3 px-2 md:px-4 text-sm font-semibold text-gray-600">PER</td>
+                        <td className="py-3 px-2 md:px-4 text-sm text-gray-800">{detailedQuote.pe_ratio.toFixed(2)}</td>
+                        <td className="py-3 px-2 md:px-4"></td>
+                        <td className="py-3 px-2 md:px-4"></td>
                 </tr>
-              ))
-            ) : (
-              <tr><td colSpan="3" className="text-center py-4 text-gray-500">검색 결과가 없습니다.</td></tr>
             )}
           </tbody>
         </table>
+              </div>
+
+              {/* 간단한 차트 */}
+              {chartData.length > 0 && (
+                <div className="bg-gray-50 rounded-lg p-4 md:p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">최근 30일 추이</h3>
+                  <div className="bg-white rounded-lg p-4 text-center">
+                    <p className="text-2xl mb-3">📈</p>
+                    <p className="text-sm text-gray-700 mb-2">차트 데이터: {chartData.length}개 포인트</p>
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">최저가</p>
+                        <p className="text-sm font-semibold text-blue-600">
+                          {formatCurrency(Math.min(...chartData.map(d => d.price)), getFractionDigits(detailedQuote.ticker))}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-600 mb-1">최고가</p>
+                        <p className="text-sm font-semibold text-red-600">
+                          {formatCurrency(Math.max(...chartData.map(d => d.price)), getFractionDigits(detailedQuote.ticker))}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-amber-700 bg-amber-50 border-l-2 border-amber-500 p-3 mt-4 text-left rounded">
+                      💡 실시간 차트 라이브러리(Chart.js, Recharts 등)를 추가하면 시각화된 차트를 볼 수 있습니다.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-64 text-gray-500">
+              종목을 선택하거나 검색해주세요.
+            </div>
+          )}
+        </div>
+
+        {/* 오른쪽: 호가창 */}
+        <div className="lg:col-span-3 bg-white rounded-lg shadow-md p-4 md:p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 pb-3 border-b-2 border-gray-200">
+            호가 정보
+          </h3>
+          <div className="bg-gray-50 rounded-lg p-4 text-center">
+            <p className="text-2xl mb-3">📊</p>
+            <p className="text-sm font-semibold text-gray-700 mb-3">실시간 호가 정보</p>
+            <div className="text-xs text-blue-700 bg-blue-50 border-l-2 border-blue-500 p-3 text-left rounded leading-relaxed">
+              💡 실시간 호가 데이터는 WebSocket 또는 실시간 API 연동이 필요합니다.
+              <br /><br />
+              Yahoo Finance는 실시간 호가를 제공하지 않으므로, 향후 다음과 같은 방법으로 구현할 수 있습니다:
+              <br /><br />
+              • 한국 주식: KIS API (한국투자증권)
+              <br />
+              • 미국 주식: Alpaca API, IEX Cloud
+              <br />
+              • 암호화폐: Binance WebSocket, Upbit API
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

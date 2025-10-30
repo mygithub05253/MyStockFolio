@@ -37,7 +37,7 @@ public class PortfolioService {
         Portfolio portfolio = portfolioRepository.findById(portfolioId)
                 .orElseThrow(() -> new ResourceNotFoundException("Portfolio not found with id: " + portfolioId));
         // TODO: 조회된 포트폴리오가 해당 사용자의 것이 맞는지 추가 확인
-        // if (!portfolio.getUser().getId().equals(userId)) { ... }
+        // if (!portfolio.getUser().getUserId().equals(userId)) { ... }
         return PortfolioDto.PortfolioResponse.fromEntity(portfolio);
     }
 
